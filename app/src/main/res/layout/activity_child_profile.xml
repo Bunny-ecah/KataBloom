@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F4F6FB"
+    android:orientation="vertical">
+
+    <!-- TOP BAR -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:background="@drawable/bg_gradient">
+
+        <TextView
+            android:id="@+id/btnBack"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:gravity="center"
+            android:text="←"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/bg_circle_white_transparent"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Child Profile"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Manage your child information"
+                android:textSize="14sp"
+                android:textColor="#EAF0FF"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- CONTENT -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- PROFILE CARD -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:background="@drawable/bg_card"
+                android:padding="22dp"
+                android:elevation="4dp">
+
+                <TextView
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:gravity="center"
+                    android:text="👦"
+                    android:textSize="36sp"
+                    android:background="@drawable/bg_profile_circle"
+                    android:layout_marginBottom="14dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Child Information"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="#222222" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Enter or update your child's details below"
+                    android:textSize="14sp"
+                    android:textColor="#666666"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="22dp" />
+
+                <!-- Child Name -->
+                <EditText
+                    android:id="@+id/etChildName"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:hint="Child Name"
+                    android:background="@drawable/edittext_rounded"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:textColor="#333333"
+                    android:textColorHint="#888888"
+                    android:singleLine="true"
+                    android:layout_marginBottom="14dp" />
+
+                <!-- Child Age -->
+                <EditText
+                    android:id="@+id/etChildAge"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:hint="Child Age"
+                    android:inputType="number"
+                    android:background="@drawable/edittext_rounded"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:textColor="#333333"
+                    android:textColorHint="#888888"
+                    android:singleLine="true"
+                    android:layout_marginBottom="22dp" />
+
+                <!-- Start Learning -->
+                <Button
+                    android:id="@+id/btnStartLearning"
+                    android:layout_width="match_parent"
+                    android:layout_height="58dp"
+                    android:text="📚 Start Learning"
+                    android:textAllCaps="false"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="#4B63F1"
+                    android:layout_marginBottom="12dp"
+                    android:elevation="3dp" />
+
+                <!-- Update Profile -->
+                <Button
+                    android:id="@+id/btnUpdateChild"
+                    android:layout_width="match_parent"
+                    android:layout_height="58dp"
+                    android:text="✏️ Update Profile"
+                    android:textAllCaps="false"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="#52C7B8"
+                    android:layout_marginBottom="12dp"
+                    android:elevation="3dp" />
+
+                <!-- Delete Profile -->
+                <Button
+                    android:id="@+id/btnDeleteChild"
+                    android:layout_width="match_parent"
+                    android:layout_height="58dp"
+                    android:text="🗑 Delete Profile"
+                    android:textAllCaps="false"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="#F45D73"
+                    android:elevation="3dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

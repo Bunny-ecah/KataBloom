@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "778478427814",
+    "project_id": "fypproject-dyslearn",
+    "storage_bucket": "fypproject-dyslearn.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:778478427814:android:4d9fac68cdc91da4e6de67",
+        "android_client_info": {
+          "package_name": "com.example.myproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtJozUaqXnRudxRzWJLDUVQq0uOCV-pTc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true" android:background="#FFF9ED">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="28dp">
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="DysLearn" android:textSize="24sp" android:textColor="#166461" android:layout_marginTop="24dp" />
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Little steps.\nGrowing confidence." android:textSize="36sp" android:textStyle="bold" android:textColor="#233043" android:layout_marginTop="20dp" />
+<ImageView android:layout_width="match_parent" android:layout_height="180dp" android:layout_marginTop="20dp" android:src="@drawable/learning_illustration" android:contentDescription="Children learning together" android:scaleType="fitCenter" />
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="A word garden for curious learners" android:textSize="24sp" android:textColor="#233043" android:layout_marginTop="20dp" />
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Listen, explore and collect stars. Short Bahasa Melayu adventures, at your own pace." android:textSize="20sp" android:lineSpacingMultiplier="1.4" android:textColor="#233043" android:layout_marginTop="12dp" />
+<Button android:id="@+id/btnAdventure" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="64dp" android:text="Explore the word garden" android:textAllCaps="false" android:textSize="20sp" android:textColor="#FFFFFF" android:backgroundTint="#166461" android:layout_marginTop="24dp" />
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Offline guest practice • No account needed" android:textSize="16sp" android:textColor="#233043" android:layout_marginTop="8dp" />
+<Button android:id="@+id/btnGetStarted" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="60dp" android:text="Parent sign in &amp; child profiles" android:textAllCaps="false" android:textSize="18sp" android:layout_marginTop="16dp" />
+</LinearLayout>
+</ScrollView>

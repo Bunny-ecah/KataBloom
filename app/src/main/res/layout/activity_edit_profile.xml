@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#EAF4FF">
+
+    <!-- Back Button -->
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="60dp"
+        android:layout_height="40dp"
+        android:text="←"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:backgroundTint="#4B63F1"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="20dp"/>
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Edit Profile"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Name Field -->
+    <EditText
+        android:id="@+id/etName"
+        android:hint="Full Name"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/edittext_rounded"
+        android:textColor="#333333"
+        android:textColorHint="#808080"
+        android:fontFamily="sans-serif-medium"/>
+
+    <!-- Email Field -->
+    <EditText
+        android:id="@+id/etEmail"
+        android:hint="Email"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:padding="16dp"
+        android:layout_marginBottom="24dp"
+        android:background="@drawable/edittext_rounded"
+        android:textColor="#333333"
+        android:textColorHint="#808080"
+        android:inputType="textEmailAddress"
+        android:fontFamily="sans-serif-medium"/>
+
+    <!-- Save Button -->
+    <Button
+        android:id="@+id/btnSaveProfile"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Save"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:backgroundTint="#4B63F1"
+        android:layout_marginBottom="12dp"
+        android:elevation="4dp"
+        android:fontFamily="sans-serif-medium"/>
+
+
+
+</LinearLayout>
