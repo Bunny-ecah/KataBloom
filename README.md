@@ -1,10 +1,10 @@
-# DysLearn 2.0
+# DysLearn 2.1
 
 A native Android word garden for primary learners, with a Bahasa Melayu / English interface switch. Learning words and speech practice stay in Bahasa Melayu.
 
 ## Open the correct project
 
-Open this folder in Android Studio, let Gradle sync, select your phone/tablet, then press Run. The app now opens directly into the new garden experience. The app name is DysLearn and the version is 2.0.
+Open this folder in Android Studio, let Gradle sync, select your phone/tablet, then press Run. The app opens to a bilingual welcome page with Sign in, Sign up and Continue without an account. Signed-in parents return to the dashboard. The app name is DysLearn and the version is 2.1.
 
 - Android 6.0+ (API 23), compile/target SDK 36.
 - Use Android Studio's bundled JDK (17+, tested with 21).
@@ -12,6 +12,10 @@ Open this folder in Android Studio, let Gradle sync, select your phone/tablet, t
 - Existing Firebase configuration is retained for optional parent accounts and manual cloud backup.
 
 ## What's included
+
+- Welcome, sign-in and sign-up screens, with a visible account/logout section in Settings.
+- A dashboard with daily mission, effort-star and streak tiles, and a badge trail.
+- A seven-day activity chart and independent-answer ring based on real saved results; empty results display a dash.
 
 - 30 bundled Malay words across three levels, with alternating sets of five words.
 - Listen and look, identify initial letters, order syllable tiles, and try speaking.
