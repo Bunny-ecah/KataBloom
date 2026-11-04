@@ -11,13 +11,18 @@ android {
         applicationId = "com.example.myproject"
         minSdk = 23
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+        create("qa") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".qa"
+            matchingFallbacks += listOf("debug")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -26,10 +31,16 @@ android {
             )
         }
     }
+    testBuildType = "qa"
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+}
+
+// QA has a separate package and no live Firebase connection or real learner data.
+tasks.configureEach {
+    if (name == "processQaGoogleServices") enabled = false
 }
 
 dependencies {
