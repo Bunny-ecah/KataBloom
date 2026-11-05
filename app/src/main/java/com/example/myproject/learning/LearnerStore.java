@@ -11,6 +11,7 @@ public final class LearnerStore {
     private JSONObject state;
     public boolean recovered;
     public LearnerStore(Context context,String owner){
+        // Existing installations use this key; retaining it preserves their learner profiles.
         prefs=context.getSharedPreferences("dyslearn_v2_"+owner,Context.MODE_PRIVATE);
         String raw=prefs.getString("state","");
         try{state=raw.isEmpty()?empty():validate(new JSONObject(raw));}

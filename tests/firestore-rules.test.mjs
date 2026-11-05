@@ -14,7 +14,7 @@ const valid = () => ({ payload: '{"version":2,"children":[],"records":[]}', upda
 before(async () => {
   const [host, port] = process.env.FIRESTORE_EMULATOR_HOST.split(':');
   env = await initializeTestEnvironment({
-    projectId: 'demo-dyslearn',
+    projectId: 'demo-katabloom',
     firestore: { host, port: Number(port), rules: readFileSync('firestore.rules', 'utf8') }
   });
 });

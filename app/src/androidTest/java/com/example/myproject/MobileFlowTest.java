@@ -24,13 +24,13 @@ public class MobileFlowTest {
     }
     @Before public void cleanQaOnly(){Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();assertTrue(c.getPackageName().endsWith(".qa"));for(String name:new String[]{"dyslearn_v2_local","dyslearn_display_v2","adventure_guest"})c.getSharedPreferences(name,0).edit().clear().commit();}
     @Test public void languageChoiceSurvivesRecreation(){
-        try(ActivityScenario<DysLearnActivity> scenario=ActivityScenario.launch(DysLearnActivity.class)){
+        try(ActivityScenario<KataBloomActivity> scenario=ActivityScenario.launch(KataBloomActivity.class)){
             onView(withText("KataBloom")).check(matches(isDisplayed()));
             onView(withText("English")).perform(click());onView(withText("Learn with confidence.")).check(matches(isDisplayed()));scenario.recreate();onView(withText("Learn with confidence.")).check(matches(isDisplayed()));screenshot("welcome-en");onView(withText("BM")).perform(click());onView(withText("Belajar dengan yakin.")).check(matches(isDisplayed()));
         }
     }
     @Test public void completeLetterRoundAndKeepRewardAfterRotation(){
-        try(ActivityScenario<DysLearnActivity> scenario=ActivityScenario.launch(DysLearnActivity.class)){
+        try(ActivityScenario<KataBloomActivity> scenario=ActivityScenario.launch(KataBloomActivity.class)){
             onView(withText("Teruskan tanpa akaun")).perform(scrollTo(),click());
             onView(withText("Cuba sebagai tetamu")).perform(scrollTo(),click());screenshot("lessons-ms");onView(withContentDescription("Mulakan Benih vokal")).perform(scrollTo(),click());onView(withText("Cari huruf awal")).perform(click());screenshot("practice-ms");
             String[] answers={"a","a","i","i","u"};
@@ -41,7 +41,7 @@ public class MobileFlowTest {
         }
     }
     @Test public void syllableRetryAndHintSurviveRotation(){
-        try(ActivityScenario<DysLearnActivity> scenario=ActivityScenario.launch(DysLearnActivity.class)){
+        try(ActivityScenario<KataBloomActivity> scenario=ActivityScenario.launch(KataBloomActivity.class)){
             onView(withText("Teruskan tanpa akaun")).perform(scrollTo(),click());
             onView(withText("Cuba sebagai tetamu")).perform(scrollTo(),click());onView(withContentDescription("Mulakan Benih vokal")).perform(scrollTo(),click());onView(withText("Bina perkataan")).perform(click());
             onView(withText("pi")).perform(scrollTo(),click());onView(withText("a")).perform(scrollTo(),click());
@@ -52,7 +52,7 @@ public class MobileFlowTest {
         }
     }
     @Test public void addLearnerFromPhoneFormAndKeepSelection(){
-        try(ActivityScenario<DysLearnActivity> scenario=ActivityScenario.launch(DysLearnActivity.class)){
+        try(ActivityScenario<KataBloomActivity> scenario=ActivityScenario.launch(KataBloomActivity.class)){
             onView(withText("Teruskan tanpa akaun")).perform(scrollTo(),click());
             onView(withText("Tambah pelajar")).perform(scrollTo(),click());
             onView(withContentDescription("Nama panggilan (maksimum 40 aksara)")).perform(scrollTo(),click(),replaceText("Alya"),closeSoftKeyboard()).check(matches(withText("Alya")));
@@ -61,7 +61,7 @@ public class MobileFlowTest {
         }
     }
     @Test public void landingHasAuthEntryAndSessionExit(){
-        try(ActivityScenario<DysLearnActivity> scenario=ActivityScenario.launch(DysLearnActivity.class)){
+        try(ActivityScenario<KataBloomActivity> scenario=ActivityScenario.launch(KataBloomActivity.class)){
             onView(withText("Log masuk")).perform(scrollTo(),click());onView(withText("E-mel ibu bapa")).check(matches(isDisplayed()));screenshot("signin-ms");onView(withText("Kembali ke halaman mula")).perform(scrollTo(),click());
             onView(withText("Daftar akaun")).perform(scrollTo(),click());onView(withText("Sahkan kata laluan")).perform(scrollTo()).check(matches(isDisplayed()));screenshot("signup-ms");onView(withText("Kembali ke halaman mula")).perform(scrollTo(),click());
             onView(withText("Teruskan tanpa akaun")).perform(scrollTo(),click());onView(withText("Tetapan")).perform(click());onView(withText("Keluar ke halaman mula")).perform(scrollTo(),click());onView(withText("Teruskan")).perform(click());onView(withText("Belajar dengan yakin.")).check(matches(isDisplayed()));

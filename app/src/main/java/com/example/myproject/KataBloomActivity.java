@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /** Main mobile experience: one navigation flow and a single source of learning results. */
-public class DysLearnActivity extends AppCompatActivity {
+public class KataBloomActivity extends AppCompatActivity {
     private static final int INK=0xff26384b, MUTED=0xff526276, TEAL=0xff176b60, PURPLE=0xff66549c, CREAM=0xfffffaef, MINT=0xffe3f1df, LILAC=0xffeee9fa, GOLD=0xffffedbc;
     private LinearLayout shell,body;
     private LearnerStore store;
@@ -233,7 +233,7 @@ public class DysLearnActivity extends AppCompatActivity {
     }
     private void say(String value){
         if(!voiceReady){new AlertDialog.Builder(this).setTitle(t("Sediakan audio Bahasa Melayu","Set up Malay audio")).setMessage(t("Pasang atau aktifkan suara Bahasa Melayu dalam tetapan teks ke pertuturan Android. Muat turun suara untuk kegunaan luar talian.","Install or enable a Malay voice in Android text-to-speech settings. Download a voice for offline use.")).setPositiveButton(t("Buka tetapan","Open settings"),(d,w)->{try{startActivity(new Intent("com.android.settings.TTS_SETTINGS"));}catch(ActivityNotFoundException e){toast(t("Buka tetapan teks ke pertuturan pada peranti.","Open text-to-speech settings on your device."));}}).setNegativeButton(t("Kembali","Back"),null).show();return;}
-        voice.setSpeechRate(slow?.7f:.9f);if(voice.speak(value,TextToSpeech.QUEUE_FLUSH,null,"dyslearn-word")==TextToSpeech.ERROR)toast(t("Audio tidak dapat dimainkan.","Audio could not play."));
+        voice.setSpeechRate(slow?.7f:.9f);if(voice.speak(value,TextToSpeech.QUEUE_FLUSH,null,"katabloom-word")==TextToSpeech.ERROR)toast(t("Audio tidak dapat dimainkan.","Audio could not play."));
     }
     private void updateAudioUi(){if(audioButton!=null)audioButton.setText(voiceReady?t("Dengar perkataan","Listen to the word"):t("Bantuan audio","Audio help"));if(audioNote!=null)audioNote.setVisibility(voiceReady?View.GONE:View.VISIBLE);}
     private void pause(){new AlertDialog.Builder(this).setTitle(t("Masa untuk berehat?","Time for a break?")).setMessage(t("Pusingan ini belum disimpan. Sambung sekarang atau kembali ke taman.","This round is not saved yet. Continue now or return to the garden.")).setNegativeButton(t("Sambung","Continue"),null).setPositiveButton(t("Ke taman","To the garden"),(d,w)->{round=null;selectedTiles.clear();go("home");}).show();}
@@ -310,7 +310,7 @@ public class DysLearnActivity extends AppCompatActivity {
         button(session,owner.equals("local")?t("Keluar ke halaman mula","Return to welcome"):t("Log keluar","Sign out"),this::endSession,false);
         card(t("Belajar bersama","Learn together"),t("Cuba satu pusingan pendek. Dengar dahulu, beri masa, dan rehat bila perlu. Bintang diberi untuk usaha; petunjuk tidak mengurangkan ganjaran.","Try one short round. Listen first, allow time and take breaks. Stars reward effort; hints do not reduce rewards."),GOLD);
         card(t("Privasi & skop","Privacy & learning scope"),t("Profil dan keputusan disimpan dalam storan peribadi aplikasi. Tiada iklan atau rakaman suara disimpan oleh KataBloom. Perkhidmatan pertuturan peranti mungkin menggunakan rangkaian dan tertakluk pada privasinya sendiri.\n\nLatihan ini bukan diagnosis atau rawatan disleksia. Audio sintetik ialah sebutan perkataan, bukan rakaman fonem. Sila semak kandungan bersama guru.","Profiles and results stay in app-private storage. KataBloom stores no audio recordings and contains no ads. Your device's speech service may use a network and has its own privacy terms.\n\nThis practice is not a dyslexia diagnosis or treatment. Synthetic audio reads words; it is not recorded phoneme audio. Review content with a teacher."),LILAC);
-        note("KataBloom 2.2 · "+t("Direka untuk telefon & tablet","Designed for phones & tablets"));
+        note("KataBloom 2.2.1 · "+t("Direka untuk telefon & tablet","Designed for phones & tablets"));
     }
     interface Flag{void set(boolean value);}
     private void toggle(LinearLayout container,String label,boolean checked,String key,Flag flag){androidx.appcompat.widget.SwitchCompat s=new androidx.appcompat.widget.SwitchCompat(this);s.setText(label);s.setTextColor(INK);s.setTextSize(large?21:18);s.setMinHeight(dp(64));s.setPadding(0,dp(8),0,dp(8));s.setChecked(checked);container.addView(s,new LinearLayout.LayoutParams(-1,-2));s.setOnCheckedChangeListener((b,value)->{flag.set(value);settings.edit().putBoolean(key,value).apply();render();});}

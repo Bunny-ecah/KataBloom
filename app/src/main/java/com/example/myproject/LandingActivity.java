@@ -10,7 +10,7 @@ public class LandingActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        startActivity(new Intent(this, DysLearnActivity.class));
+        startActivity(new Intent(this, KataBloomActivity.class));
         finish();
     }
 }

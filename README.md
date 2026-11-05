@@ -1,10 +1,10 @@
-# KataBloom 2.2
+# KataBloom 2.2.1
 
 A native Android word garden for primary learners, with a Bahasa Melayu / English interface switch. Learning words and speech practice stay in Bahasa Melayu.
 
 ## Open the correct project
 
-Open this folder in Android Studio, let Gradle sync, select your phone/tablet, then press Run. The app opens to a bilingual welcome page with Sign in, Sign up and Continue without an account. Signed-in parents return to the dashboard. The app name is KataBloom and the version is 2.2.
+Open this folder in Android Studio, let Gradle sync, select your phone/tablet, then press Run. The app opens to a bilingual welcome page with Sign in, Sign up and Continue without an account. Signed-in parents return to the dashboard. The app name is KataBloom and the version is 2.2.1.
 
 - Android 6.0+ (API 23), compile/target SDK 36.
 - Use Android Studio's bundled JDK (17+, tested with 21).
@@ -76,6 +76,6 @@ npm ci
 npm run test:rules
 ```
 
-The command uses the isolated demo-dyslearn project and local Firestore emulator. It refuses to run its tests without the emulator environment variable, requires no live Firebase account, and never deploys rules. The Check Firebase rules GitHub workflow runs when cloud rules/testing files change.
+The command uses the isolated demo-katabloom project and local Firestore emulator. It refuses to run its tests without the emulator environment variable, requires no live Firebase account, and never deploys rules. The Check Firebase rules GitHub workflow runs when cloud rules/testing files change.
 
 Live Firebase sign-in, backup/restore and logout still require a check with the owner's real test account and deployed rules.
