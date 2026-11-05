@@ -105,7 +105,7 @@ public class DysLearnActivity extends AppCompatActivity {
         note(t("Ruang kecil untuk impian besar","A little space for big possibilities"));
         title(t("Belajar dengan yakin.","Learn with confidence."));
         text(body,t("Setiap perkataan, satu langkah baharu.","Every word is a new beginning."),22,PURPLE);
-        GardenView garden=new GardenView(this,3);garden.setContentDescription(t("Taman kata DysLearn","The DysLearn word garden"));body.addView(garden,new LinearLayout.LayoutParams(-1,dp(132)));
+        GardenView garden=new GardenView(this,3);garden.setContentDescription(t("Taman kata KataBloom","The KataBloom word garden"));body.addView(garden,new LinearLayout.LayoutParams(-1,dp(132)));
         button(body,t("Log masuk","Sign in"),()->go("account"),true);
         button(body,t("Daftar akaun","Sign up"),()->go("register"),false);
         button(body,t("Teruskan tanpa akaun","Continue without an account"),()->go("home"),false);
@@ -257,7 +257,7 @@ public class DysLearnActivity extends AppCompatActivity {
         for(int i=store.records().length()-1;i>=0&&shown<10;i--){JSONObject r=store.records().optJSONObject(i);if(!r.optString("child").equals(store.selectedId()))continue;shown++;card(mode(r.optInt("mode")),level(r.optInt("level"))+" · "+r.optString("date")+"\n"+(r.optInt("mode")==1||r.optInt("mode")==2?r.optInt("independent")+t(" / 5 tanpa bantuan"," / 5 without help"):t("Latihan selesai","Practice completed")),white?0xfff2f5f2:0xfff1efe7);}
         if(shown==0)note(t("Belum ada latihan selesai. Mari mulakan satu pengembaraan.","No completed practice yet. Let's start an adventure."));
         note(t("Paparan ini bukan diagnosis atau ukuran penguasaan membaca. Log menyimpan sehingga 500 aktiviti terkini; jumlah bintang dan pusingan kekal.","This is not a diagnosis or a reading mastery measure. The log keeps up to 500 recent activities; star and round totals remain."));
-        button(body,t("Eksport laporan teks","Export text report"),()->parentGate(()->{Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);intent.setType("text/plain");intent.addCategory(Intent.CATEGORY_OPENABLE);intent.putExtra(Intent.EXTRA_TITLE,"DysLearn-progress.txt");try{export.launch(intent);}catch(ActivityNotFoundException e){notice(t("Eksport tidak tersedia","Export unavailable"),t("Peranti tiada pemilih dokumen.","No document picker is installed."));}}),false);
+        button(body,t("Eksport laporan teks","Export text report"),()->parentGate(()->{Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);intent.setType("text/plain");intent.addCategory(Intent.CATEGORY_OPENABLE);intent.putExtra(Intent.EXTRA_TITLE,"KataBloom-progress.txt");try{export.launch(intent);}catch(ActivityNotFoundException e){notice(t("Eksport tidak tersedia","Export unavailable"),t("Peranti tiada pemilih dokumen.","No document picker is installed."));}}),false);
     }
     private void badgeJourney(int rounds){
         int target=rounds<1?1:rounds<3?3:10;
@@ -268,8 +268,8 @@ public class DysLearnActivity extends AppCompatActivity {
         text(c,Math.min(rounds,target)+" / "+target+t(" selesai"," completed"),16,PURPLE);
     }
     private String reportText(){
-        JSONObject c=store.selected();if(c==null)return "DysLearn — no learner selected";
-        StringBuilder out=new StringBuilder("DysLearn\n");out.append(t("Pelajar: ","Learner: ")).append(c.optString("name")).append('\n').append(t("Umur: ","Age: ")).append(c.optInt("age")).append('\n').append(t("Pusingan selesai: ","Completed rounds: ")).append(c.optInt("rounds")).append('\n').append(t("Bintang usaha: ","Effort stars: ")).append(c.optInt("stars")).append('\n').append(t("Jawapan tanpa bantuan: ","Answers without help: ")).append(c.optInt("independent")).append('/').append(c.optInt("questions")).append("\n\n");
+        JSONObject c=store.selected();if(c==null)return "KataBloom — no learner selected";
+        StringBuilder out=new StringBuilder("KataBloom\n");out.append(t("Pelajar: ","Learner: ")).append(c.optString("name")).append('\n').append(t("Umur: ","Age: ")).append(c.optInt("age")).append('\n').append(t("Pusingan selesai: ","Completed rounds: ")).append(c.optInt("rounds")).append('\n').append(t("Bintang usaha: ","Effort stars: ")).append(c.optInt("stars")).append('\n').append(t("Jawapan tanpa bantuan: ","Answers without help: ")).append(c.optInt("independent")).append('/').append(c.optInt("questions")).append("\n\n");
         for(int i=store.records().length()-1;i>=0;i--){JSONObject r=store.records().optJSONObject(i);if(r.optString("child").equals(c.optString("id")))out.append(r.optString("date")).append(" | ").append(level(r.optInt("level"))).append(" | ").append(mode(r.optInt("mode"))).append(" | ").append((r.optInt("mode")==1||r.optInt("mode")==2)?r.optInt("independent")+"/5":"—").append('\n');}
         return out.append('\n').append(t("Rekod latihan sahaja; bukan penilaian klinikal atau bukti penguasaan.","Practice records only; not a clinical assessment or evidence of mastery.")).toString();
     }
@@ -309,8 +309,8 @@ public class DysLearnActivity extends AppCompatActivity {
         }
         button(session,owner.equals("local")?t("Keluar ke halaman mula","Return to welcome"):t("Log keluar","Sign out"),this::endSession,false);
         card(t("Belajar bersama","Learn together"),t("Cuba satu pusingan pendek. Dengar dahulu, beri masa, dan rehat bila perlu. Bintang diberi untuk usaha; petunjuk tidak mengurangkan ganjaran.","Try one short round. Listen first, allow time and take breaks. Stars reward effort; hints do not reduce rewards."),GOLD);
-        card(t("Privasi & skop","Privacy & learning scope"),t("Profil dan keputusan disimpan dalam storan peribadi aplikasi. Tiada iklan atau rakaman suara disimpan oleh DysLearn. Perkhidmatan pertuturan peranti mungkin menggunakan rangkaian dan tertakluk pada privasinya sendiri.\n\nLatihan ini bukan diagnosis atau rawatan disleksia. Audio sintetik ialah sebutan perkataan, bukan rakaman fonem. Sila semak kandungan bersama guru.","Profiles and results stay in app-private storage. DysLearn stores no audio recordings and contains no ads. Your device's speech service may use a network and has its own privacy terms.\n\nThis practice is not a dyslexia diagnosis or treatment. Synthetic audio reads words; it is not recorded phoneme audio. Review content with a teacher."),LILAC);
-        note("DysLearn 2.1 · "+t("Direka untuk telefon & tablet","Designed for phones & tablets"));
+        card(t("Privasi & skop","Privacy & learning scope"),t("Profil dan keputusan disimpan dalam storan peribadi aplikasi. Tiada iklan atau rakaman suara disimpan oleh KataBloom. Perkhidmatan pertuturan peranti mungkin menggunakan rangkaian dan tertakluk pada privasinya sendiri.\n\nLatihan ini bukan diagnosis atau rawatan disleksia. Audio sintetik ialah sebutan perkataan, bukan rakaman fonem. Sila semak kandungan bersama guru.","Profiles and results stay in app-private storage. KataBloom stores no audio recordings and contains no ads. Your device's speech service may use a network and has its own privacy terms.\n\nThis practice is not a dyslexia diagnosis or treatment. Synthetic audio reads words; it is not recorded phoneme audio. Review content with a teacher."),LILAC);
+        note("KataBloom 2.2 · "+t("Direka untuk telefon & tablet","Designed for phones & tablets"));
     }
     interface Flag{void set(boolean value);}
     private void toggle(LinearLayout container,String label,boolean checked,String key,Flag flag){androidx.appcompat.widget.SwitchCompat s=new androidx.appcompat.widget.SwitchCompat(this);s.setText(label);s.setTextColor(INK);s.setTextSize(large?21:18);s.setMinHeight(dp(64));s.setPadding(0,dp(8),0,dp(8));s.setChecked(checked);container.addView(s,new LinearLayout.LayoutParams(-1,-2));s.setOnCheckedChangeListener((b,value)->{flag.set(value);settings.edit().putBoolean(key,value).apply();render();});}

@@ -1,10 +1,10 @@
-# DysLearn 2.1
+# KataBloom 2.2
 
 A native Android word garden for primary learners, with a Bahasa Melayu / English interface switch. Learning words and speech practice stay in Bahasa Melayu.
 
 ## Open the correct project
 
-Open this folder in Android Studio, let Gradle sync, select your phone/tablet, then press Run. The app opens to a bilingual welcome page with Sign in, Sign up and Continue without an account. Signed-in parents return to the dashboard. The app name is DysLearn and the version is 2.1.
+Open this folder in Android Studio, let Gradle sync, select your phone/tablet, then press Run. The app opens to a bilingual welcome page with Sign in, Sign up and Continue without an account. Signed-in parents return to the dashboard. The app name is KataBloom and the version is 2.2.
 
 - Android 6.0+ (API 23), compile/target SDK 36.
 - Use Android Studio's bundled JDK (17+, tested with 21).
@@ -39,7 +39,7 @@ The activity log keeps 500 recent completed rounds; lifetime stars/rounds and in
 
 Enable Email/Password in Firebase Authentication and review/deploy the provided `firestore.rules` in your Firebase project. Rules have not been deployed by this source change. The app reports server failures instead of claiming backup success. The new backup uses `/users/{uid}/dyslearn/state` and is manual, for one active device at a time. Restoring requires confirmation and replaces this version's device state; it does not merge concurrent edits. Keep the server payload under 700 KB. A timed-out Firestore write may remain queued until the connection returns.
 
-Registration uses email/password and password confirmation. Passwords are passed to Firebase Auth and never saved by DysLearn. The arithmetic parent gate prevents accidental edits; it is not a secure password lock. No microphone permission is requested by DysLearn: speech input is handled by the device's external recognizer. That provider may require a network and processes speech under its own terms.
+Registration uses email/password and password confirmation. Passwords are passed to Firebase Auth and never saved by KataBloom. The arithmetic parent gate prevents accidental edits; it is not a secure password lock. No microphone permission is requested by KataBloom: speech input is handled by the device's external recognizer. That provider may require a network and processes speech under its own terms.
 
 ## Audio and teaching scope
 
@@ -64,3 +64,18 @@ QA uses the separate package `com.example.myproject.qa`, with no live Firebase a
 GitHub Actions builds/tests/lints each push to main and supplies a downloadable debug APK. It does not install on your device. Press Run in Android Studio for the fastest local update. GitHub-hosted debug builds use a different signing key from local builds unless you configure a persistent signing key; use your local build consistently on the tablet to preserve upgrade compatibility.
 
 See VALIDATION.md for checks actually performed and remaining limitations.
+
+## KataBloom branding and cloud checks
+
+KataBloom is the app's new display name, formerly DysLearn. Install the build as an update to retain existing learner profiles. The Android Studio project is also named KataBloom.
+
+The repository includes 12 Firestore security tests for family isolation, signed-out access, backup size/type/timestamp validation, profile access and read-only lesson content. Use Node 24 and JDK 21, then run:
+
+```powershell
+npm ci
+npm run test:rules
+```
+
+The command uses the isolated demo-dyslearn project and local Firestore emulator. It refuses to run its tests without the emulator environment variable, requires no live Firebase account, and never deploys rules. The Check Firebase rules GitHub workflow runs when cloud rules/testing files change.
+
+Live Firebase sign-in, backup/restore and logout still require a check with the owner's real test account and deployed rules.

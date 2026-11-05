@@ -1,0 +1,13 @@
+{
+  "name": "dyslearn-cloud-checks",
+  "private": true,
+  "description": "Isolated Firestore security rules checks for the Android app",
+  "scripts": {
+    "test:rules": "firebase emulators:exec --project demo-dyslearn --only firestore \"node --test tests/firestore-rules.test.mjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.2.0",
+    "firebase-tools": "^15.35.0"
+  }
+}

@@ -25,6 +25,7 @@ public class MobileFlowTest {
     @Before public void cleanQaOnly(){Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();assertTrue(c.getPackageName().endsWith(".qa"));for(String name:new String[]{"dyslearn_v2_local","dyslearn_display_v2","adventure_guest"})c.getSharedPreferences(name,0).edit().clear().commit();}
     @Test public void languageChoiceSurvivesRecreation(){
         try(ActivityScenario<DysLearnActivity> scenario=ActivityScenario.launch(DysLearnActivity.class)){
+            onView(withText("KataBloom")).check(matches(isDisplayed()));
             onView(withText("English")).perform(click());onView(withText("Learn with confidence.")).check(matches(isDisplayed()));scenario.recreate();onView(withText("Learn with confidence.")).check(matches(isDisplayed()));screenshot("welcome-en");onView(withText("BM")).perform(click());onView(withText("Belajar dengan yakin.")).check(matches(isDisplayed()));
         }
     }

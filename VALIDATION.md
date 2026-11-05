@@ -1,24 +1,16 @@
-# DysLearn 2.1 validation
+# KataBloom 2.2 validation
 
-- Debug, isolated QA app and QA instrumentation APKs built successfully with SDK 36 and JDK 21.
-- 6 learning-logic unit tests passed: word/syllable consistency, choice uniqueness, score-once behavior, guided attempts, normalized speech matching, streak dates and invalid restored positions.
-- 11 emulator tests passed, including profile persistence and isolation, deletion, invalid-restore rollback, backup round-trip, language persistence, completing/recreating rounds without duplicate rewards, syllable retry state and learner form entry.
-- Final suite ran at 360 x 640 dp. Core learning UI also passed earlier on the original 1080 x 2400 emulator display. Display overrides were restored afterwards.
-- Screenshots inspected for the welcome screen, home, lessons, initial-letter exercise, word building, completion and larger-text English settings. No physical tablet was modified by QA tests.
-- Android lint: 0 errors and 9 warnings, reduced from 453 warnings in the previous version. Remaining warnings are dependency/version-catalog suggestions. No baseline or lint suppression was added.
-- Debug APK size: 11.55 MB, previously about 52 MB.
-- 159 retired source/resource files were verified preserved under legacy-source, outside Android's active source set.
+- APK, isolated QA app and QA instrumentation packages built successfully with JDK 21 / SDK 36.
+- APK metadata verified: app label KataBloom, versionName 2.2, versionCode 4, applicationId com.example.myproject.
+- 6 Android learning-logic unit tests passed on the renamed build.
+- 12 Firestore emulator tests passed: owner-only backup access, signed-out denial, unexpected fields, non-string/oversized payloads, server timestamps, updates, deletion, child-profile isolation and read-only lesson content. Test project demo-dyslearn has no live data.
+- The previous 2.1 build passed all 11 mobile instrumentation tests at 360 x 640 dp, including landing/account navigation and session exit. The new branding assertion compiles but could not run because the emulator disconnected. Name verification used Android APK metadata instead.
+- Lint: 0 errors and 9 advisory warnings. No baseline/suppression added.
+- Original app/data identifiers are retained for in-place updates. Visible app/project/report branding is KataBloom.
+- Debug APK size: 11.46 MB.
 
-## New interface checks
+## Remaining manual checks
 
-Landing sign-in/sign-up entry, return-to-welcome session exit, the seven-day activity chart, and the independent-answer ring were included in the QA navigation and screenshot checks. Real Firebase authentication/logout still requires a live-account check.
+Live Firebase email registration/sign-in, password reset, backup/restore and logout need the owner's real test account and deployed rules. The rules were tested locally and were not deployed. Private GitHub Actions status could not be read from this session. Check the repository's Actions tab for the published run. A Malay literacy educator should review learning content; real device voice availability, recognition quality and accessibility still need device checks.
 
-## Remaining checks
-
-Live Firebase sign-in, password reset, account ownership rules, backup/restore and original cloud-profile import require testing against the owner's configured Firebase backend. The provided rules have not been deployed. Real Malay voice quality, external speech recognition, TalkBack and the user's physical tablet still need device checks. Content and learning suitability need review by a Malay literacy educator; no clinical validation is claimed. Landscape and every device/font combination have not been exhaustively tested.
-
-## APK identity
-
-Version: 2.1 (code 3)
-
-SHA-256: `48e0cdbc9ec3d114b5a6c68bd79578f8cf4ce2417fefd73be82c3116abec528a`
+APK SHA-256: `eb0d57cae88e11837003ed9c5402e63d7cf8568b28e704b0d08f480a3e5edb76`

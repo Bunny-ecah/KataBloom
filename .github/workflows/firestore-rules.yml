@@ -1,0 +1,55 @@
+name: Check Firebase rules
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - firestore.rules
+      - firebase.json
+      - package.json
+      - package-lock.json
+      - tests/firestore-rules.test.mjs
+      - .github/workflows/firestore-rules.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - firestore.rules
+      - firebase.json
+      - package.json
+      - package-lock.json
+      - tests/firestore-rules.test.mjs
+      - .github/workflows/firestore-rules.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify owner-only cloud access
+        run: npm run test:rules
+        env:
+          FIREBASE_CLI_DISABLE_TELEMETRY: '1'
+      - name: Emulator diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Firebase-rules-diagnostics
+          path: |
+            firestore-debug.log
+            firebase-debug.log
+          if-no-files-found: ignore
+          retention-days: 7

@@ -5,6 +5,9 @@
 *.keystore
 keystore.properties
 .env
+node_modules/
+*-debug.log
+.firebase/
 .gradle
 /local.properties
 /.idea/caches

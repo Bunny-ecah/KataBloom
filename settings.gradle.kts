@@ -19,6 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "My Project"
+rootProject.name = "KataBloom"
 include(":app")
- 
