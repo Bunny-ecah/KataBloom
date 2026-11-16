@@ -1,20 +1,42 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     id("com.google.gms.google-services")
 }
+
+// Release signing: CI reads GitHub secrets; locally, put the same values in keystore.properties (git-ignored).
+val keystoreProps = Properties().apply {
+    val f = rootProject.file("keystore.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+fun signingValue(key: String, env: String): String? =
+    System.getenv(env)?.takeIf { it.isNotBlank() } ?: keystoreProps.getProperty(key)
+val releaseStoreFile = signingValue("storeFile", "KATABLOOM_KEYSTORE_PATH")
 
 android {
     namespace = "com.example.myproject"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.myproject"
+        applicationId = "com.bunnyecah.katabloom"
         minSdk = 23
         targetSdk = 36
-        versionCode = 5
-        versionName = "2.2.1"
+        versionCode = 6
+        versionName = "2.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        if (releaseStoreFile != null) {
+            create("release") {
+                storeFile = file(releaseStoreFile)
+                storePassword = signingValue("storePassword", "KATABLOOM_KEYSTORE_PASSWORD")
+                keyAlias = signingValue("keyAlias", "KATABLOOM_KEY_ALIAS")
+                keyPassword = signingValue("keyPassword", "KATABLOOM_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -24,6 +46,7 @@ android {
             matchingFallbacks += listOf("debug")
         }
         release {
+            signingConfigs.findByName("release")?.let { signingConfig = it }
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

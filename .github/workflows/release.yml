@@ -1,0 +1,66 @@
+name: Publish release APK
+
+# Push a tag such as v2.3.0 to build a signed APK and publish it on the Releases page.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to (re)publish, e.g. v2.3.0
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Install Android SDK
+        run: sdkmanager "platforms;android-36" "build-tools;35.0.0"
+      - name: Restore signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KATABLOOM_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then echo "::error::Secret KATABLOOM_KEYSTORE_BASE64 is missing"; exit 1; fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/katabloom-release.jks"
+          echo "KATABLOOM_KEYSTORE_PATH=$RUNNER_TEMP/katabloom-release.jks" >> "$GITHUB_ENV"
+      - name: Test and build signed APK
+        env:
+          KATABLOOM_KEYSTORE_PASSWORD: ${{ secrets.KATABLOOM_KEYSTORE_PASSWORD }}
+          KATABLOOM_KEY_ALIAS: ${{ secrets.KATABLOOM_KEY_ALIAS }}
+          KATABLOOM_KEY_PASSWORD: ${{ secrets.KATABLOOM_KEY_PASSWORD }}
+        run: bash ./gradlew testDebugUnitTest assembleRelease --no-daemon --console=plain
+      - name: Verify signature
+        run: |
+          APK=app/build/outputs/apk/release/app-release.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs "$APK"
+          cp "$APK" "KataBloom-${TAG}.apk"
+          sha256sum "KataBloom-${TAG}.apk" > "KataBloom-${TAG}.apk.sha256"
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NOTES="Download **KataBloom-${TAG}.apk** below and open it on an Android 6.0+ phone or tablet. See the README for install steps."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "KataBloom-${TAG}.apk" "KataBloom-${TAG}.apk.sha256" --clobber
+          else
+            gh release create "$TAG" "KataBloom-${TAG}.apk" "KataBloom-${TAG}.apk.sha256" --title "KataBloom ${TAG}" --notes "$NOTES"
+          fi
+      - name: Remove signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/katabloom-release.jks"
