@@ -35,10 +35,12 @@ Open this folder in Android Studio, let Gradle sync, select your phone/tablet, t
 - A dashboard with daily mission, effort-star and streak tiles, and a badge trail.
 - A seven-day activity chart and independent-answer ring based on real saved results; empty results display a dash.
 
-- 30 bundled Malay words across three levels, with alternating sets of five words.
-- Listen and look, identify initial letters, order syllable tiles, and try speaking.
+- 120 bundled Malay words across six levels (vowel words, open syllables, closed syllables, ng/ny sounds, three-syllable and long words) and six themes (animals, food, home & school, body & clothes, nature, travel & places). Each round uses five words; four rotating sets cover every word in a level.
+- Six activities: Listen & look, Find the first letter, Build a word (syllable tiles), Picture match, Missing letter and Try speaking. Picture match and Missing letter use a select-then-Semak (Check) flow.
+- Kamus Kata word library: browse by theme, hear each word, see syllables, and mark words as learned. Words practised in completed rounds are shown as explored (practice, not mastery).
+- Bloomi, KataBloom's own mascot, a confetti celebration after each round, a 24-sticker album and eight permanent badges.
 - Gentle hints/retries, no timer or lost lives, and five effort stars per completed round.
-- A garden illustration that grows with practice and badges at 1, 3 and 10 rounds.
+- A garden illustration that grows with practice.
 - Multiple local learner profiles, ages 7-11, with separate results and a saved active learner.
 - Honest progress: actual completed rounds, consecutive practice days and independent letter/building answers. Listening completion and speech-service matches are not labelled as reading mastery.
 - Adjustable text size, spacing, background, audio speed and saved BM/English choice.

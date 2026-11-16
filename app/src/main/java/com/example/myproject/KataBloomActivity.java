@@ -34,7 +34,8 @@ public class KataBloomActivity extends AppCompatActivity {
     private LearnerStore store;
     private SharedPreferences settings;
     private FirebaseAuth auth;
-    private String owner="local",page="landing",feedback="",speechRound="",cloudStatus="";
+    private String owner="local",page="landing",feedback="",speechRound="",cloudStatus="",choice="";
+    private int libraryTheme=-1;
     private PracticeRound round;
     private final ArrayList<Integer> selectedTiles=new ArrayList<>();
     private TextToSpeech voice;
@@ -71,7 +72,7 @@ public class KataBloomActivity extends AppCompatActivity {
         page=owner.equals("local")?"landing":"home";
         store=new LearnerStore(this,owner);
         if(owner.equals("local"))store.importGarden(getSharedPreferences("adventure_guest",MODE_PRIVATE),t("Pelajar","Learner"));
-        if(saved!=null&&owner.equals(saved.getString("owner"))){page=saved.getString("page","home");feedback=saved.getString("feedback","");speechRound=saved.getString("speechRound","");speechIndex=saved.getInt("speechIndex",-1);speechPending=saved.getBoolean("speechPending");readRound(saved.getBundle("round"));ArrayList<Integer> tiles=saved.getIntegerArrayList("tiles");if(tiles!=null)selectedTiles.addAll(tiles);}
+        if(saved!=null&&owner.equals(saved.getString("owner"))){page=saved.getString("page","home");feedback=saved.getString("feedback","");speechRound=saved.getString("speechRound","");speechIndex=saved.getInt("speechIndex",-1);speechPending=saved.getBoolean("speechPending");choice=saved.getString("choice","");libraryTheme=saved.getInt("libraryTheme",-1);readRound(saved.getBundle("round"));ArrayList<Integer> tiles=saved.getIntegerArrayList("tiles");if(tiles!=null)selectedTiles.addAll(tiles);}
         if((page.equals("practice")||page.equals("complete"))&&(round==null||store.child(round.child)==null))page="home";
         voice=new TextToSpeech(this,status->{if(isDestroyed())return;if(status==TextToSpeech.SUCCESS){voiceReady=voice.setLanguage(new Locale("ms","MY"))>=0;voice.setSpeechRate(slow?.7f:.9f);}updateAudioUi();});
         getOnBackPressedDispatcher().addCallback(this,new OnBackPressedCallback(true){@Override public void handleOnBackPressed(){back();}});
@@ -105,7 +106,7 @@ public class KataBloomActivity extends AppCompatActivity {
         LinearLayout words=column();words.setPadding(dp(10),0,0,0);box.addView(words,new LinearLayout.LayoutParams(0,-2,1));text(words,value,17,INK);
     }
     private LinearLayout card(String heading,String detail,int color){LinearLayout c=column();c.setPadding(dp(20),dp(14),dp(20),dp(16));c.setBackground(surface(color,22));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,dp(10),0,dp(8));body.addView(c,lp);if(!heading.isEmpty())text(c,heading,22,INK).setTypeface(null,Typeface.BOLD);if(!detail.isEmpty())text(c,detail,17,INK);return c;}
-    private void go(String next){if(voice!=null)voice.stop();page=next;feedback="";render();}
+    private void go(String next){if(voice!=null)voice.stop();page=next;feedback="";choice="";render();}
     private void render(){
         if(isFinishing()||isDestroyed())return;
         audioButton=null;audioNote=null;
@@ -117,7 +118,7 @@ public class KataBloomActivity extends AppCompatActivity {
         TextView brand=new TextView(this);brand.setText(R.string.app_name);brand.setTextColor(Color.WHITE);brand.setTextSize(22);brand.setTypeface(Typeface.create("sans-serif-medium",Typeface.BOLD));header.addView(brand,new LinearLayout.LayoutParams(0,dp(52),1));brand.setGravity(Gravity.CENTER_VERTICAL);
         Button lang=new Button(this);lang.setText(en?"BM":"English");lang.setAllCaps(false);lang.setTextSize(15);lang.setMinHeight(dp(40));lang.setMinimumHeight(dp(40));lang.setPadding(dp(16),0,dp(16),0);lang.setTextColor(Color.WHITE);lang.setBackground(background(0x33ffffff,20));lang.setStateListAnimator(null);lang.setContentDescription(t("Tukar bahasa kepada English","Switch interface to Bahasa Melayu"));lang.setOnClickListener(v->{en=!en;settings.edit().putBoolean("english",en).apply();render();});header.addView(lang,new LinearLayout.LayoutParams(-2,dp(44)));
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);shell.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));android.widget.FrameLayout frame=new android.widget.FrameLayout(this);scroll.addView(frame,new ScrollView.LayoutParams(-1,-2));body=column();body.setPadding(dp(20),dp(8),dp(20),dp(28));int width=getResources().getConfiguration().screenWidthDp;android.widget.FrameLayout.LayoutParams bodyLp=new android.widget.FrameLayout.LayoutParams(width>760?dp(720):-1,-2,Gravity.TOP|Gravity.CENTER_HORIZONTAL);frame.addView(body,bodyLp);
-        switch(page){case "landing":landing();break;case "learn":lessons();break;case "practice":practice();break;case "complete":complete();break;case "progress":progress();break;case "settings":settingsPage();break;case "profiles":profiles();break;case "account":account(false);break;case "register":account(true);break;default:page="home";home();}
+        switch(page){case "landing":landing();break;case "learn":lessons();break;case "practice":practice();break;case "complete":complete();break;case "progress":progress();break;case "settings":settingsPage();break;case "profiles":profiles();break;case "library":library();break;case "stickers":stickers();break;case "account":account(false);break;case "register":account(true);break;default:page="home";home();}
         if(!page.equals("landing")&&!page.equals("practice")&&!page.equals("complete")&&!page.equals("account")&&!page.equals("register"))navigation();
     }
     private void landing(){
@@ -153,7 +154,8 @@ public class KataBloomActivity extends AppCompatActivity {
         LinearLayout nav=new LinearLayout(this);nav.setPadding(dp(4),dp(8),dp(4),dp(8));nav.setBackgroundColor(Color.WHITE);nav.setElevation(dp(8));shell.addView(nav);
         String[] labels={t("Utama","Home"),t("Belajar","Learn"),t("Taman","Garden"),t("Profil","Profile")},pages={"home","learn","progress","settings"};
         int[] icons={R.drawable.ic_nav_home,R.drawable.ic_nav_learn,R.drawable.ic_nav_garden,R.drawable.ic_nav_profile};
-        for(int i=0;i<4;i++){final String target=pages[i];boolean active=target.equals(page);
+        String current=page.equals("library")?"learn":page.equals("stickers")?"progress":page;
+        for(int i=0;i<4;i++){final String target=pages[i];boolean active=target.equals(current);
             LinearLayout item=column();item.setGravity(Gravity.CENTER);item.setMinimumHeight(dp(56));item.setClickable(true);item.setFocusable(true);item.setSelected(active);item.setOnClickListener(v->go(target));nav.addView(item,new LinearLayout.LayoutParams(0,-2,1));
             android.widget.FrameLayout pill=new android.widget.FrameLayout(this);if(active)pill.setBackground(background(PURPLE,16));item.addView(pill,new LinearLayout.LayoutParams(dp(56),dp(32)));
             ImageView icon=new ImageView(this);Drawable d=androidx.appcompat.content.res.AppCompatResources.getDrawable(this,icons[i]);if(d!=null){d=d.mutate();d.setTint(active?Color.WHITE:MUTED);icon.setImageDrawable(d);}icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);pill.addView(icon,new android.widget.FrameLayout.LayoutParams(dp(24),dp(24),Gravity.CENTER));
@@ -163,7 +165,7 @@ public class KataBloomActivity extends AppCompatActivity {
         LinearLayout greet=new LinearLayout(this);greet.setGravity(Gravity.CENTER_VERTICAL);body.addView(greet);LinearLayout words=column();greet.addView(words,new LinearLayout.LayoutParams(0,-2,1));
         TextView hello=text(words,store.selected()==null?t("Selamat datang ke taman kata!","Welcome to your word garden!"):t("Hai, ","Hello, ")+childName()+"!",26,INK);hello.setTypeface(null,Typeface.BOLD);ViewCompat.setAccessibilityHeading(hello,true);
         text(words,t("Teruskan pembelajaran hari ini!","Keep learning today!"),15,MUTED);
-        LogoView buddy=new LogoView(this);buddy.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);greet.addView(buddy,new LinearLayout.LayoutParams(dp(76),dp(76)));
+        MascotView buddy=new MascotView(this,false);buddy.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);greet.addView(buddy,new LinearLayout.LayoutParams(dp(92),dp(92)));
         if(store.selected()==null){
             GardenView garden=new GardenView(this,0);garden.setContentDescription(t("Taman tumbuh bersama usaha kamu.","A garden growing with your effort."));body.addView(garden,new LinearLayout.LayoutParams(-1,dp(130)));
             LinearLayout c=card(t("Mari mula bersama","A little adventure awaits"),t("Aktiviti pendek untuk mendengar, mengenal huruf dan membina perkataan Bahasa Melayu.","Short activities to listen, explore letters and build Bahasa Melayu words."),MINT);
@@ -172,8 +174,10 @@ public class KataBloomActivity extends AppCompatActivity {
             note(t("Tiada akaun diperlukan. Data disimpan pada peranti ini.","No account needed. Learning is saved on this device."));return;
         }
         JSONObject c=store.selected();int count=c.optInt("rounds");boolean today=store.dates(c).contains(ProgressStats.date(System.currentTimeMillis()));
-        stats(new String[]{"⭐","🔥","🏅"},new String[]{String.valueOf(c.optInt("stars")),String.valueOf(ProgressStats.streak(store.dates(c),System.currentTimeMillis())),String.valueOf(badges(count))},new String[]{t("Bintang","Stars"),t("Hari Berturut","Day streak"),t("Lencana","Badges")});
+        stats(new String[]{"⭐","🔥","🏅"},new String[]{String.valueOf(c.optInt("stars")),String.valueOf(ProgressStats.streak(store.dates(c),System.currentTimeMillis())),String.valueOf(store.badgeCount(c))},new String[]{t("Bintang","Stars"),t("Hari Berturut","Day streak"),t("Lencana","Badges")});
         mission(t("Misi Hari Ini","Today's mission"),today?t("✓ Satu pengembaraan selesai. Teroka lagi?","✓ One adventure complete. Explore another?"):t("Lengkapkan satu aktiviti pembelajaran.","Complete one learning activity."));
+        shortcut("📖",t("Kamus Kata","Word library"),store.explored(c).size()+" / "+LessonBank.all().size()+t(" perkataan diteroka"," words explored"),"library");
+        shortcut("🎁",t("Pelekat & lencana","Stickers & badges"),LearnerStore.stickers(c)+" / "+LearnerStore.STICKERS.length+t(" pelekat · "," stickers · ")+store.badgeCount(c)+" / 8"+t(" lencana"," badges"),"stickers");
         LinearLayout week=card(t("Aktiviti 7 Hari","7-day activity"),"",MINT);weekChart(week,150);
         badgeJourney(count);
         button(body,t("Lihat perkembangan saya","Explore my progress"),()->go("progress"),false);
@@ -181,29 +185,36 @@ public class KataBloomActivity extends AppCompatActivity {
         card(t("Bersama ibu bapa","A moment together"),t("Dengar bersama. Beri masa untuk mencuba. Puji usaha, bukan kepantasan.","Listen together. Allow time to try. Celebrate effort and give breaks."),LILAC);
         note(owner.equals("local")?t("Disimpan pada peranti ini · Mod tempatan","Saved on this device · Local mode"):t("Profil peranti untuk akaun ibu bapa · Sandaran manual dalam Tetapan","Device profiles for your parent account · Manual backup in Settings"));
     }
-    private void mission(String heading,String detail){
-        LinearLayout m=new LinearLayout(this);m.setGravity(Gravity.CENTER_VERTICAL);m.setPadding(dp(16),dp(14),dp(16),dp(14));m.setBackground(surface(MINT,22));m.setClickable(true);m.setFocusable(true);m.setContentDescription(heading+". "+detail+". "+t("Mula belajar","Start learning"));m.setOnClickListener(v->go("learn"));
+    private void mission(String heading,String detail){shortcut("🏵",heading,detail,"learn");}
+    private void shortcut(String symbol,String heading,String detail,String target){
+        LinearLayout m=new LinearLayout(this);m.setGravity(Gravity.CENTER_VERTICAL);m.setPadding(dp(16),dp(14),dp(16),dp(14));m.setBackground(surface(MINT,22));m.setClickable(true);m.setFocusable(true);m.setContentDescription(heading+". "+detail+". "+t("Buka","Open"));m.setOnClickListener(v->go(target));
         LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,dp(8),0,dp(8));body.addView(m,lp);
-        TextView icon=new TextView(this);icon.setText("🏵");icon.setTextSize(24);icon.setGravity(Gravity.CENTER);icon.setBackground(background(GOLD,24));m.addView(icon,new LinearLayout.LayoutParams(dp(48),dp(48)));
+        TextView icon=new TextView(this);icon.setText(symbol);icon.setTextSize(24);icon.setGravity(Gravity.CENTER);icon.setBackground(background(target.equals("learn")?GOLD:LILAC,24));m.addView(icon,new LinearLayout.LayoutParams(dp(48),dp(48)));
         LinearLayout words=column();words.setPadding(dp(14),0,dp(8),0);m.addView(words,new LinearLayout.LayoutParams(0,-2,1));text(words,heading,19,INK).setTypeface(null,Typeface.BOLD);text(words,detail,15,MUTED).setPadding(0,0,0,0);
         TextView arrow=new TextView(this);arrow.setText("→");arrow.setTextSize(24);arrow.setTextColor(PURPLE);arrow.setGravity(Gravity.CENTER);arrow.setBackground(background(LILAC,20));m.addView(arrow,new LinearLayout.LayoutParams(dp(40),dp(40)));
         for(int i=0;i<m.getChildCount();i++)m.getChildAt(i).setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
     }
     private String badge(int count){return count>=10?t("Pokok ilmu","Knowledge tree"):count>=3?t("Tunas rajin","Growing sprout"):count>=1?t("Benih berani","Brave seed"):t("Benih baharu","New seed");}
-    private String level(int value){return new String[]{t("Benih vokal","Vowel seeds"),t("Kebun perkataan","Word garden"),t("Pokok suku kata","Syllable tree")}[value];}
-    private String mode(int value){return new String[]{t("Dengar & lihat","Listen & look"),t("Cari huruf awal","Find the first letter"),t("Bina perkataan","Build a word"),t("Cuba sebut","Try speaking")}[value];}
+    private String level(int value){return new String[]{t("Benih vokal","Vowel seeds"),t("Kebun perkataan","Word garden"),t("Pokok suku kata","Syllable tree"),t("Kata tertutup","Closed syllables"),t("Bunyi ng & ny","ng & ny sounds"),t("Kata panjang","Long words")}[value];}
+    private String levelDetail(int value){return new String[]{t("Perkataan yang bermula dengan vokal.","Words beginning with vowels."),t("Dua suku kata terbuka, seperti bu-ku.","Two open syllables, like bu-ku."),t("Perkataan tiga suku kata.","Three-syllable words."),t("Suku kata akhir berakhir dengan konsonan, seperti ru-mah.","Final syllables ending in a consonant, like ru-mah."),t("Bunyi ng dan ny, seperti bu-nga dan nya-muk.","The ng and ny sounds, like bu-nga and nya-muk."),t("Perkataan panjang untuk pembaca berani.","Longer words for confident readers.")}[value];}
+    private String mode(int value){return new String[]{t("Dengar & lihat","Listen & look"),t("Cari huruf awal","Find the first letter"),t("Bina perkataan","Build a word"),t("Cuba sebut","Try speaking"),t("Padan gambar","Picture match"),t("Huruf hilang","Missing letter")}[value];}
+    private String theme(int value){return new String[]{t("🐾 Haiwan","🐾 Animals"),t("🍎 Makanan","🍎 Food"),t("🏠 Rumah & sekolah","🏠 Home & school"),t("👕 Badan & pakaian","👕 Body & clothes"),t("🌳 Alam","🌳 Nature"),t("🚗 Kenderaan & tempat","🚗 Travel & places")}[value];}
     private void lessons(){
         title(t("Pilih pengembaraan","Choose an adventure"));
         if(store.selected()==null){note(t("Tambah pelajar untuk menyimpan usaha mereka.","Add a learner to save their practice."));button(body,t("Tambah pelajar","Add a learner"),()->editLearner(null),true);return;}
         note(childName()+t(", kita belajar satu langkah pada satu masa.",", let's learn one step at a time."));
-        String[] details={t("Perkataan yang bermula dengan vokal.","Words beginning with vowels."),t("Perkataan biasa dengan dua suku kata.","Familiar words with two syllables."),t("Teroka perkataan yang lebih panjang.","Explore longer words together.")};
-        for(int i=0;i<3;i++){final int n=i;LinearLayout c=card((i+1)+" · "+level(i),details[i],MINT);button(c,t("Pilih aktiviti","Choose activity"),()->chooseMode(n),true).setContentDescription(t("Mulakan ","Start ")+level(i));}
+        JSONObject child=store.selected();Set<String> explored=store.explored(child);
+        shortcut("📖",t("Kamus Kata","Word library"),explored.size()+" / "+LessonBank.all().size()+t(" perkataan diteroka · dengar dan teroka mengikut tema"," words explored · listen and browse by theme"),"library");
+        for(int i=0;i<LessonBank.ORDER.length;i++){final int n=LessonBank.ORDER[i];int seen=0;StringBuilder pictures=new StringBuilder();for(LessonBank.Word word:LessonBank.level(n)){if(explored.contains(word.text))seen++;if(pictures.length()<24)pictures.append(word.picture);}
+            LinearLayout c=card((i+1)+" · "+level(n),levelDetail(n),MINT);TextView preview=text(c,pictures.toString(),20,INK);preview.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+            progressBar(c,LessonBank.PER_LEVEL,seen,seen+" / "+LessonBank.PER_LEVEL+t(" perkataan diteroka"," words explored"));text(c,seen+" / "+LessonBank.PER_LEVEL+t(" perkataan diteroka"," words explored"),14,MUTED).setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+            button(c,t("Pilih aktiviti","Choose activity"),()->chooseMode(n),true).setContentDescription(t("Mulakan ","Start ")+level(n));}
         note(t("Semua tahap terbuka. Ulang bila-bila masa. Tiada had masa atau nyawa yang hilang.","Every level is available. Repeat freely, with no timers or lost lives."));
     }
     private void chooseMode(int selectedLevel){
-        String[] modes={mode(0),mode(1),mode(2),mode(3)};
+        String[] modes={mode(0),mode(1),mode(2),mode(4),mode(5),mode(3)};int[] ids={0,1,2,4,5,3};
         new AlertDialog.Builder(this).setTitle(level(selectedLevel)).setItems(modes,(d,which)->{
-            round=new PracticeRound();round.child=store.selectedId();round.level=selectedLevel;round.mode=which;round.batch=store.selected().optInt("rounds");selectedTiles.clear();go("practice");
+            round=new PracticeRound();round.child=store.selectedId();round.level=selectedLevel;round.mode=ids[which];choice="";round.batch=store.selected().optInt("rounds");selectedTiles.clear();go("practice");
         }).setNegativeButton(t("Kembali","Back"),null).show();
     }
     private LessonBank.Word word(){return LessonBank.word(round.level,round.batch,round.index);}
@@ -216,8 +227,10 @@ public class KataBloomActivity extends AppCompatActivity {
         final int question=round.index;
         LinearLayout c=card("","",MINT);
         TextView picture=text(c,item.picture,56,INK);picture.setGravity(Gravity.CENTER);picture.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        String visible=round.mode==2&&!round.solved?"• • •":item.text;
-        TextView wordText=text(c,visible,44,INK);wordText.setGravity(Gravity.CENTER);wordText.setTypeface(null,Typeface.BOLD);wordText.setContentDescription(round.mode==2&&!round.solved?t("Dengar untuk membina perkataan","Listen to build the word"):item.text);
+        int gap=LessonBank.gap(item,round.index+round.batch);
+        String visible=round.solved?item.text:(round.mode==2||round.mode==4)?"• • •":round.mode==5?LessonBank.masked(item,gap):item.text;
+        TextView wordText=text(c,visible,44,INK);wordText.setGravity(Gravity.CENTER);wordText.setTypeface(null,Typeface.BOLD);wordText.setLetterSpacing(round.mode==5&&!round.solved?.12f:wide?.045f:0);
+        wordText.setContentDescription(round.solved?item.text:round.mode==2?t("Dengar untuk membina perkataan","Listen to build the word"):round.mode==4?t("Perkataan tersembunyi. Pilih perkataan untuk gambar.","Hidden word. Choose the word for the picture."):round.mode==5?t("Perkataan dengan satu huruf hilang","Word with one missing letter"):item.text);
         if(round.mode==0||round.solved)text(c,String.join("  ·  ",item.parts()),26,PURPLE).setGravity(Gravity.CENTER);
         audioButton=button(c,voiceReady?t("Dengar perkataan","Listen to the word"):t("Bantuan audio","Audio help"),()->say(item.text),true);
         audioNote=text(c,t("Audio memerlukan suara Bahasa Melayu. Perkataan dan bantuan bertulis masih tersedia.","Audio needs an installed Malay voice. Written words and hints remain available."),15,MUTED);
@@ -232,6 +245,14 @@ public class KataBloomActivity extends AppCompatActivity {
             instruction(t("Huruf manakah yang memulakan perkataan ini?","Which letter begins this word?"));
             for(String choice:LessonBank.initials(item,round.index+round.batch))button(body,choice,()->{if(round.index==question)answerInitial(choice);},false).setTextSize(large?32:28);
         }else if(round.mode==2){buildTiles(item);}
+        else if(round.mode==4){
+            instruction(t("Pilih perkataan yang sepadan dengan gambar.","Choose the word that matches the picture."));
+            choiceGrid(LessonBank.pictureChoices(item,round.index+round.batch),question,26,item.text,t("✓ Betul! Itu ","✓ Correct! That is ")+item.picture+" "+item.text+".",t("Belum tepat. Lihat gambar, dengar, dan cuba lagi.","Not quite. Look at the picture, listen and try again."));
+        }else if(round.mode==5){
+            instruction(t("Huruf manakah yang hilang?","Which letter is missing?"));
+            String missing=item.text.substring(gap,gap+1);
+            choiceGrid(LessonBank.gapChoices(item,gap,round.index+round.batch),question,32,missing,t("✓ Betul! Huruf ","✓ Correct! The letter ")+missing+t(" melengkapkan "," completes ")+item.text+".",t("Belum tepat. Dengar perkataan dan cuba huruf lain.","Not quite. Listen to the word and try another letter."));
+        }
         else{
             note(t("Padanan bergantung pada perkataan yang didengar oleh peranti. Ini bukan penilaian sebutan.","Matching depends on words heard by the device. This is not a pronunciation assessment."));
             button(body,speechPending?t("Menunggu peranti…","Waiting for device…"):t("Cuba sebut perkataan","Try saying the word"),this::recognize,true).setEnabled(!speechPending);
@@ -240,6 +261,14 @@ public class KataBloomActivity extends AppCompatActivity {
         if(!round.solved&&!feedback.isEmpty()){TextView f=text(body,feedback,18,TEAL);f.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);}
         if(!round.solved&&round.mode!=0)button(body,t("Tunjuk bantuan","Show a hint"),this::hint,false);
         button(body,t("Rehat sebentar","Take a break"),this::pause,false);
+    }
+    /** Pick one answer, then press Semak/Check. Wrong answers count as help, never lose stars. */
+    private void choiceGrid(List<String> options,int question,int size,String answer,String right,String wrong){
+        LinearLayout row=new LinearLayout(this);body.addView(row);
+        for(String option:options){Button b=new Button(this);b.setText(option);b.setAllCaps(false);b.setTextSize(large?size+3:size);b.setTypeface(null,Typeface.BOLD);b.setMinHeight(dp(72));b.setStateListAnimator(null);boolean picked=option.equals(choice);
+            GradientDrawable shape=background(picked?LILAC:Color.WHITE,18);shape.setStroke(dp(picked?3:2),picked?PURPLE:0xffd6c6f2);b.setBackground(shape);b.setTextColor(picked?TEAL:INK);b.setSelected(picked);b.setContentDescription(option+(picked?t(", dipilih",", selected"):""));
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-2,1);lp.setMargins(dp(5),dp(8),dp(5),dp(8));row.addView(b,lp);b.setOnClickListener(v->{if(round.index!=question||round.solved)return;choice=option;feedback="";render();});}
+        Button check=button(body,t("✓ Semak","✓ Check"),()->{if(round.index!=question||round.solved||choice.isEmpty())return;if(choice.equals(answer)){round.solve();feedback=right;}else{round.help();feedback=wrong;}choice="";render();},true);check.setEnabled(!choice.isEmpty());check.setAlpha(choice.isEmpty()?.5f:1f);
     }
     private void answerInitial(String choice){
         if(round.solved)return;
@@ -257,20 +286,24 @@ public class KataBloomActivity extends AppCompatActivity {
         for(int i=0;i<tiles.size();i++){final int n=i;Button b=new Button(this);b.setText(tiles.get(i));b.setAllCaps(false);b.setTextSize(large?27:24);b.setMinHeight(dp(72));b.setEnabled(!selectedTiles.contains(i));b.setTypeface(null,Typeface.BOLD);b.setStateListAnimator(null);GradientDrawable tile=background(selectedTiles.contains(i)?LILAC:Color.WHITE,18);if(!selectedTiles.contains(i))tile.setStroke(dp(2),0xffd6c6f2);b.setBackground(tile);b.setTextColor(selectedTiles.contains(i)?0xffa99bc4:INK);b.setContentDescription(t("Suku kata ","Syllable ")+tiles.get(i));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-2,1);lp.setMargins(dp(5),dp(8),dp(5),dp(8));row.addView(b,lp);b.setOnClickListener(v->{if(selectedTiles.contains(n)||round.solved)return;selectedTiles.add(n);if(selectedTiles.size()==tiles.size()){StringBuilder value=new StringBuilder();for(int x:selectedTiles)value.append(tiles.get(x));if(value.toString().equals(item.text)){round.solve();feedback=t("✓ Kamu berjaya membina ","✓ You built ")+item.text+"!";}else{round.help();feedback=t("Belum lagi. Dengar dan cuba susun semula.","Not quite yet. Listen and try a new order.");selectedTiles.clear();}}render();});}
         if(!selectedTiles.isEmpty())button(body,t("Susun semula","Start again"),()->{selectedTiles.clear();render();},false);
     }
-    private void hint(){round.help();LessonBank.Word item=word();new AlertDialog.Builder(this).setTitle(t("Kita cuba bersama","Let's try together")).setMessage(item.text+"\n\n"+String.join(" · ",item.parts())+(round.mode==1?"\n\n"+t("Huruf awal: ","First letter: ")+item.text.substring(0,1):"")).setPositiveButton(t("Cuba lagi","Try again"),null).show();}
+    private void hint(){round.help();LessonBank.Word item=word();new AlertDialog.Builder(this).setTitle(t("Kita cuba bersama","Let's try together")).setMessage(item.text+"\n\n"+String.join(" · ",item.parts())+(round.mode==1?"\n\n"+t("Huruf awal: ","First letter: ")+item.text.substring(0,1):"")+(round.mode==5?"\n\n"+t("Huruf hilang: ","Missing letter: ")+item.text.charAt(LessonBank.gap(item,round.index+round.batch)):"")).setPositiveButton(t("Cuba lagi","Try again"),null).show();}
     private void next(){
         if(round==null||!round.next())return;
-        feedback="";selectedTiles.clear();if(voice!=null)voice.stop();
+        feedback="";choice="";selectedTiles.clear();if(voice!=null)voice.stop();
         if(round.finished){store.complete(round);page="complete";}render();
     }
     private void complete(){
         title(t("Usaha kamu membuat taman tumbuh!","Your effort helps the garden grow!"));
-        GardenView garden=new GardenView(this,store.child(round.child).optInt("rounds"));body.addView(garden,new LinearLayout.LayoutParams(-1,dp(170)));
+        JSONObject child=store.child(round.child);int rounds=child.optInt("rounds");
+        CelebrationView party=new CelebrationView(this);party.setContentDescription(t("Bloomi bersorak untuk usaha kamu!","Bloomi cheers for your effort!"));body.addView(party,new LinearLayout.LayoutParams(-1,dp(170)));
         card(t("+5 bintang usaha","+5 effort stars"),t("Lima perkataan selesai. Bantuan dan cubaan semula juga sebahagian daripada pembelajaran.","Five words explored. Hints and retries are part of learning too."),GOLD);
-        if(round.mode==1||round.mode==2)note(round.independent+t(" / 5 jawapan tanpa bantuan dalam pusingan ini."," / 5 answers without help in this round."));
-        card(t("Lencana taman","Garden badge"),badge(store.child(round.child).optInt("rounds")),MINT);
+        if(LessonBank.scored(round.mode))note(round.independent+t(" / 5 jawapan tanpa bantuan dalam pusingan ini."," / 5 answers without help in this round."));
+        if(rounds>=1&&rounds<=LearnerStore.STICKERS.length){LinearLayout sticker=card(t("Pelekat baharu!","New sticker!"),t("Pelekat ke-","Sticker ")+rounds+" / "+LearnerStore.STICKERS.length+t(" dalam koleksi kamu."," in your collection."),MINT);TextView big=text(sticker,LearnerStore.STICKERS[rounds-1],56,INK);big.setGravity(Gravity.CENTER);big.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);}
+        StringBuilder practised=new StringBuilder();for(int i=0;i<LessonBank.ROUND_SIZE;i++){LessonBank.Word word=LessonBank.word(round.level,round.batch,i);if(i>0)practised.append("   ");practised.append(word.picture).append(" ").append(word.text);}
+        card(t("Perkataan yang diteroka","Words you explored"),practised.toString(),MINT);
+        card(t("Lencana taman","Garden badge"),badge(rounds),MINT);
         note(t("Regangkan badan, minum air, atau berehat sebentar.","Stretch, have a drink, or take a short break."));
-        button(body,t("Kembali ke taman","Back to my garden"),()->go("home"),true);button(body,t("Lihat kemajuan","View progress"),()->go("progress"),false);
+        button(body,t("Kembali ke taman","Back to my garden"),()->go("home"),true);button(body,t("Lihat koleksi pelekat","See my stickers"),()->go("stickers"),false);button(body,t("Lihat kemajuan","View progress"),()->go("progress"),false);
     }
     private void recognize(){
         if(speechPending||round==null||round.solved)return;
@@ -297,10 +330,11 @@ public class KataBloomActivity extends AppCompatActivity {
         text(week,ProgressStats.streak(store.dates(child),System.currentTimeMillis())+t(" hari latihan berturut-turut. Mulakan semula bila-bila masa."," consecutive practice days. You can start fresh anytime."),16,TEAL);
         LinearLayout answers=card(t("Jawapan tanpa bantuan","Answers without help"),"",MINT);
         RingView ring=new RingView(this,correct,questions);ring.setContentDescription(questions==0?t("Belum ada jawapan untuk dibandingkan","No answers to compare yet"):correct+" / "+questions+t(" jawapan tanpa bantuan"," answers without help"));answers.addView(ring,new LinearLayout.LayoutParams(-1,dp(140)));
-        text(answers,questions==0?t("Belum ada aktiviti huruf atau bina perkataan selesai.","No letter or word-building activities completed yet."):correct+" / "+questions+"\n"+t("Aktiviti huruf dan bina perkataan sahaja. Petunjuk dan cubaan semula dikira sebagai bantuan.","Letter and word-building activities only. Hints and retries count as help."),17,INK);
+        text(answers,questions==0?t("Belum ada aktiviti berjawapan selesai.","No answer-based activities completed yet."):correct+" / "+questions+"\n"+t("Aktiviti huruf awal, bina perkataan, padan gambar dan huruf hilang sahaja. Petunjuk dan cubaan semula dikira sebagai bantuan.","First-letter, word-building, picture-match and missing-letter activities only. Hints and retries count as help."),17,INK);
         badgeJourney(rounds);
+        shortcut("🎁",t("Pelekat & lencana","Stickers & badges"),LearnerStore.stickers(child)+" / "+LearnerStore.STICKERS.length+t(" pelekat · "," stickers · ")+store.badgeCount(child)+" / 8"+t(" lencana"," badges"),"stickers");
         text(body,t("Latihan terkini","Recent practice"),24,INK);int shown=0;
-        for(int i=store.records().length()-1;i>=0&&shown<10;i--){JSONObject r=store.records().optJSONObject(i);if(!r.optString("child").equals(store.selectedId()))continue;shown++;card(mode(r.optInt("mode")),level(r.optInt("level"))+" · "+r.optString("date")+"\n"+(r.optInt("mode")==1||r.optInt("mode")==2?r.optInt("independent")+t(" / 5 tanpa bantuan"," / 5 without help"):t("Latihan selesai","Practice completed")),MINT);}
+        for(int i=store.records().length()-1;i>=0&&shown<10;i--){JSONObject r=store.records().optJSONObject(i);if(!r.optString("child").equals(store.selectedId()))continue;shown++;card(mode(r.optInt("mode")),level(r.optInt("level"))+" · "+r.optString("date")+"\n"+(LessonBank.scored(r.optInt("mode"))?r.optInt("independent")+t(" / 5 tanpa bantuan"," / 5 without help"):t("Latihan selesai","Practice completed")),MINT);}
         if(shown==0)note(t("Belum ada latihan selesai. Mari mulakan satu pengembaraan.","No completed practice yet. Let's start an adventure."));
         note(t("Paparan ini bukan diagnosis atau ukuran penguasaan membaca. Log menyimpan sehingga 500 aktiviti terkini; jumlah bintang dan pusingan kekal.","This is not a diagnosis or a reading mastery measure. The log keeps up to 500 recent activities; star and round totals remain."));
         button(body,t("Eksport laporan teks","Export text report"),()->parentGate(()->{Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);intent.setType("text/plain");intent.addCategory(Intent.CATEGORY_OPENABLE);intent.putExtra(Intent.EXTRA_TITLE,"KataBloom-progress.txt");try{export.launch(intent);}catch(ActivityNotFoundException e){notice(t("Eksport tidak tersedia","Export unavailable"),t("Peranti tiada pemilih dokumen.","No document picker is installed."));}}),false);
@@ -313,10 +347,60 @@ public class KataBloomActivity extends AppCompatActivity {
         for(int i=0;i<3;i++)text(c,(rounds>=goals[i]?"🏅 ":"○ ")+names[i]+"  ·  "+goals[i]+t(" pengembaraan"," adventures"),17,rounds>=goals[i]?TEAL:MUTED);
         text(c,Math.min(rounds,target)+" / "+target+t(" selesai"," completed"),16,PURPLE);
     }
+    private void library(){
+        title(t("Kamus Kata","Word library"));JSONObject child=store.selected();Set<String> explored=store.explored(child),learned=store.learned(child);
+        note(explored.size()+" / "+LessonBank.all().size()+t(" diteroka · "," explored · ")+learned.size()+t(" ditanda dipelajari. Ketik perkataan untuk dengar."," marked as learned. Tap a word to hear it."));
+        HorizontalScrollView chips=new HorizontalScrollView(this);chips.setHorizontalScrollBarEnabled(false);LinearLayout row=new LinearLayout(this);chips.addView(row);body.addView(chips);
+        for(int i=-1;i<LessonBank.THEMES;i++){final int n=i;boolean active=n==libraryTheme;TextView chip=new TextView(this);chip.setText(n<0?t("Semua","All"):theme(n));chip.setTextSize(large?17:15);chip.setTextColor(active?Color.WHITE:TEAL);chip.setGravity(Gravity.CENTER);chip.setMinHeight(dp(44));chip.setPadding(dp(16),dp(8),dp(16),dp(8));GradientDrawable shape=background(active?PURPLE:Color.WHITE,22);if(!active)shape.setStroke(dp(1),0xffcbb8ee);chip.setBackground(shape);chip.setSelected(active);chip.setClickable(true);chip.setFocusable(true);LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-2,-2);lp.setMargins(0,dp(8),dp(8),dp(8));row.addView(chip,lp);chip.setOnClickListener(v->{libraryTheme=n;render();});}
+        LinearLayout line=null;int column=0,columns=getResources().getConfiguration().screenWidthDp>600?3:2;
+        for(LessonBank.Word word:LessonBank.all()){if(libraryTheme>=0&&word.theme!=libraryTheme)continue;
+            if(column%columns==0){line=new LinearLayout(this);body.addView(line);}column++;
+            boolean isLearned=learned.contains(word.text),seen=explored.contains(word.text);
+            LinearLayout tile=column();tile.setGravity(Gravity.CENTER_HORIZONTAL);tile.setPadding(dp(8),dp(10),dp(8),dp(10));tile.setBackground(surface(MINT,20));tile.setClickable(true);tile.setFocusable(true);
+            tile.setContentDescription(word.text+", "+String.join(" ",word.parts())+(isLearned?t(", dipelajari",", learned"):seen?t(", diteroka",", explored"):""));tile.setOnClickListener(v->wordDialog(word));
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-1,1);lp.setMargins(dp(4),dp(5),dp(4),dp(5));line.addView(tile,lp);
+            TextView pic=text(tile,word.picture,34,INK);pic.setGravity(Gravity.CENTER);TextView name=text(tile,word.text,20,INK);name.setGravity(Gravity.CENTER);name.setTypeface(null,Typeface.BOLD);name.setPadding(0,0,0,0);
+            text(tile,String.join(" · ",word.parts()),14,PURPLE).setGravity(Gravity.CENTER);text(tile,isLearned?t("⭐ Dipelajari","⭐ Learned"):seen?t("🌱 Diteroka","🌱 Explored"):" ",13,MUTED).setGravity(Gravity.CENTER);
+            for(int i=0;i<tile.getChildCount();i++)tile.getChildAt(i).setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);}
+        if(line!=null)while(column%columns!=0){line.addView(new View(this),new LinearLayout.LayoutParams(0,1,1));column++;}
+        note(t("“Diteroka” bermaksud perkataan muncul dalam pengembaraan yang selesai. “Dipelajari” ditanda oleh kamu atau ibu bapa; ia bukan penilaian.","“Explored” means the word appeared in a completed adventure. “Learned” is marked by you or a parent; it is not an assessment."));
+    }
+    private void wordDialog(LessonBank.Word word){
+        LinearLayout box=column();box.setGravity(Gravity.CENTER_HORIZONTAL);box.setPadding(dp(24),dp(16),dp(24),dp(4));
+        TextView pic=text(box,word.picture,64,INK);pic.setGravity(Gravity.CENTER);pic.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        TextView name=text(box,word.text,38,INK);name.setGravity(Gravity.CENTER);name.setTypeface(null,Typeface.BOLD);
+        text(box,String.join("  ·  ",word.parts()),24,PURPLE).setGravity(Gravity.CENTER);
+        text(box,theme(word.theme)+"  ·  "+level(word.level),15,MUTED).setGravity(Gravity.CENTER);
+        JSONObject child=store.selected();boolean isLearned=store.learned(child).contains(word.text);
+        AlertDialog.Builder builder=new AlertDialog.Builder(this).setView(formScroll(box)).setPositiveButton(t("🔊 Dengar","🔊 Listen"),null).setNegativeButton(t("Tutup","Close"),null);
+        if(child!=null)builder.setNeutralButton(isLearned?t("Buang tanda","Unmark"):t("⭐ Saya tahu","⭐ I know it"),(d,w)->{store.setLearned(child.optString("id"),word.text,!isLearned);render();});
+        AlertDialog dialog=builder.create();dialog.setOnShowListener(d->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->say(word.text)));dialog.show();
+    }
+    private void stickers(){
+        title(t("Pelekat & lencana","Stickers & badges"));JSONObject child=store.selected();
+        if(child==null){note(t("Tambah pelajar untuk mula mengumpul.","Add a learner to start collecting."));button(body,t("Tambah pelajar","Add a learner"),()->editLearner(null),true);return;}
+        MascotView buddy=new MascotView(this,true);buddy.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);LinearLayout.LayoutParams buddyLp=new LinearLayout.LayoutParams(dp(110),dp(110));buddyLp.gravity=Gravity.CENTER_HORIZONTAL;body.addView(buddy,buddyLp);
+        int unlocked=LearnerStore.stickers(child);
+        LinearLayout album=card(t("Album pelekat","Sticker album"),unlocked+" / "+LearnerStore.STICKERS.length+t(" · Setiap pengembaraan selesai membuka satu pelekat."," · Every completed adventure unlocks a sticker."),MINT);
+        LinearLayout line=null;
+        for(int i=0;i<LearnerStore.STICKERS.length;i++){if(i%4==0){line=new LinearLayout(this);album.addView(line);}boolean open=i<unlocked;
+            TextView slot=new TextView(this);slot.setText(open?LearnerStore.STICKERS[i]:"?");slot.setTextSize(open?34:24);slot.setTextColor(open?INK:0xffb3a5cf);slot.setGravity(Gravity.CENTER);slot.setTypeface(null,Typeface.BOLD);
+            GradientDrawable shape=background(open?0xfffbf8ff:LILAC,18);if(open)shape.setStroke(dp(2),0xffe2d4f7);slot.setBackground(shape);slot.setContentDescription(open?t("Pelekat ","Sticker ")+(i+1):t("Pelekat berkunci","Locked sticker"));
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(72),1);lp.setMargins(dp(4),dp(4),dp(4),dp(4));line.addView(slot,lp);}
+        boolean[] earned=store.badges(child);
+        String[] icons={"🌱","🌿","🌳","🌺","🔎","📚","📅","💫"};
+        String[] names={t("Benih berani","Brave seed"),t("Tunas rajin","Growing sprout"),t("Pokok ilmu","Knowledge tree"),t("Taman mekar","Garden in bloom"),t("Penjelajah kata","Word explorer"),t("Pengumpul kata","Word collector"),t("Seminggu belajar","Week of learning"),t("100 bintang","100 stars")};
+        String[] goals={t("1 pengembaraan","1 adventure"),t("3 pengembaraan","3 adventures"),t("10 pengembaraan","10 adventures"),t("25 pengembaraan","25 adventures"),t("30 perkataan diteroka","30 words explored"),t("Semua 120 perkataan diteroka","All 120 words explored"),t("Belajar pada 7 hari berbeza","Practise on 7 different days"),t("100 bintang usaha","100 effort stars")};
+        LinearLayout badgesCard=card(t("Lencana","Badges"),store.badgeCount(child)+" / 8"+t(" diperoleh. Lencana kekal selepas diperoleh."," earned. Badges stay once earned."),MINT);
+        for(int i=0;i<names.length;i++){LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(0,dp(6),0,dp(6));badgesCard.addView(row);
+            TextView icon=new TextView(this);icon.setText(earned[i]?icons[i]:"🔒");icon.setTextSize(22);icon.setGravity(Gravity.CENTER);icon.setBackground(background(earned[i]?GOLD:LILAC,24));icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);row.addView(icon,new LinearLayout.LayoutParams(dp(48),dp(48)));
+            LinearLayout words=column();words.setPadding(dp(14),0,0,0);row.addView(words,new LinearLayout.LayoutParams(0,-2,1));TextView name=text(words,names[i],18,earned[i]?INK:MUTED);name.setTypeface(null,Typeface.BOLD);name.setPadding(0,0,0,0);text(words,(earned[i]?t("✓ Diperoleh · ","✓ Earned · "):"")+goals[i],14,MUTED).setPadding(0,0,0,0);}
+        button(body,t("Jom kumpul lagi","Collect more"),()->go("learn"),true);
+    }
     private String reportText(){
         JSONObject c=store.selected();if(c==null)return "KataBloom — no learner selected";
-        StringBuilder out=new StringBuilder("KataBloom\n");out.append(t("Pelajar: ","Learner: ")).append(c.optString("name")).append('\n').append(t("Umur: ","Age: ")).append(c.optInt("age")).append('\n').append(t("Pusingan selesai: ","Completed rounds: ")).append(c.optInt("rounds")).append('\n').append(t("Bintang usaha: ","Effort stars: ")).append(c.optInt("stars")).append('\n').append(t("Jawapan tanpa bantuan: ","Answers without help: ")).append(c.optInt("independent")).append('/').append(c.optInt("questions")).append("\n\n");
-        for(int i=store.records().length()-1;i>=0;i--){JSONObject r=store.records().optJSONObject(i);if(r.optString("child").equals(c.optString("id")))out.append(r.optString("date")).append(" | ").append(level(r.optInt("level"))).append(" | ").append(mode(r.optInt("mode"))).append(" | ").append((r.optInt("mode")==1||r.optInt("mode")==2)?r.optInt("independent")+"/5":"—").append('\n');}
+        StringBuilder out=new StringBuilder("KataBloom\n");out.append(t("Pelajar: ","Learner: ")).append(c.optString("name")).append('\n').append(t("Umur: ","Age: ")).append(c.optInt("age")).append('\n').append(t("Pusingan selesai: ","Completed rounds: ")).append(c.optInt("rounds")).append('\n').append(t("Bintang usaha: ","Effort stars: ")).append(c.optInt("stars")).append('\n').append(t("Jawapan tanpa bantuan: ","Answers without help: ")).append(c.optInt("independent")).append('/').append(c.optInt("questions")).append('\n').append(t("Perkataan diteroka: ","Words explored: ")).append(store.explored(c).size()).append('/').append(LessonBank.all().size()).append('\n').append(t("Ditanda dipelajari: ","Marked as learned: ")).append(store.learned(c).size()).append("\n\n");
+        for(int i=store.records().length()-1;i>=0;i--){JSONObject r=store.records().optJSONObject(i);if(r.optString("child").equals(c.optString("id")))out.append(r.optString("date")).append(" | ").append(level(r.optInt("level"))).append(" | ").append(mode(r.optInt("mode"))).append(" | ").append(LessonBank.scored(r.optInt("mode"))?r.optInt("independent")+"/5":"—").append('\n');}
         return out.append('\n').append(t("Rekod latihan sahaja; bukan penilaian klinikal atau bukti penguasaan.","Practice records only; not a clinical assessment or evidence of mastery.")).toString();
     }
     private void profiles(){
@@ -406,11 +490,11 @@ public class KataBloomActivity extends AppCompatActivity {
     private void importLegacy(){
         String account=owner;FirebaseFirestore.getInstance().collection("users").document(owner).collection("children").get(Source.SERVER).addOnCompleteListener(this,result->{if(!owner.equals(account))return;if(!result.isSuccessful()){notice(t("Import gagal","Import failed"),t("Semak sambungan dan peraturan Firestore.","Check your connection and Firestore rules."));return;}int before=store.children().length();for(DocumentSnapshot doc:result.getResult()){Object raw=doc.get("age");try{int age=Integer.parseInt(String.valueOf(raw));String name=doc.getString("name");if(name!=null&&age>=7&&age<=11)store.importChild(doc.getId(),name,age);}catch(IllegalArgumentException ignored){/* Invalid legacy profiles remain on the server for review. */}}go("profiles");notice(t("Import selesai","Import finished"),(store.children().length()-before)+t(" profil ditambah. Skor lama tidak ditukar kepada penguasaan atau bintang baharu."," profiles added. Old scores were not converted into mastery or new stars."));});
     }
-    private void back(){if(page.equals("practice")){pause();return;}if(busy&&(page.equals("account")||page.equals("register"))){toast(t("Tunggu permintaan selesai.","Wait for the request to finish."));return;}if(page.equals("account")||page.equals("register")){go("landing");return;}if(page.equals("landing")||page.equals("home")){finish();return;}go("home");}
+    private void back(){if(page.equals("practice")){pause();return;}if(busy&&(page.equals("account")||page.equals("register"))){toast(t("Tunggu permintaan selesai.","Wait for the request to finish."));return;}if(page.equals("account")||page.equals("register")){go("landing");return;}if(page.equals("landing")||page.equals("home")){finish();return;}if(page.equals("library")){go("learn");return;}if(page.equals("stickers")){go("progress");return;}go("home");}
     private void notice(String heading,String message){if(!isFinishing()&&!isDestroyed())new AlertDialog.Builder(this).setTitle(heading).setMessage(message).setPositiveButton(t("Baik","OK"),null).show();}
     private void toast(String value){Toast.makeText(this,value,Toast.LENGTH_LONG).show();}
     @Override public void onSaveInstanceState(Bundle out){
-        super.onSaveInstanceState(out);out.putString("owner",owner);out.putString("page",page);out.putString("feedback",feedback);out.putString("speechRound",speechRound);out.putInt("speechIndex",speechIndex);out.putBoolean("speechPending",speechPending);out.putIntegerArrayList("tiles",new ArrayList<>(selectedTiles));
+        super.onSaveInstanceState(out);out.putString("owner",owner);out.putString("page",page);out.putString("feedback",feedback);out.putString("speechRound",speechRound);out.putInt("speechIndex",speechIndex);out.putBoolean("speechPending",speechPending);out.putString("choice",choice);out.putInt("libraryTheme",libraryTheme);out.putIntegerArrayList("tiles",new ArrayList<>(selectedTiles));
         if(round!=null){Bundle b=new Bundle();b.putString("id",round.id);b.putString("child",round.child);b.putInt("level",round.level);b.putInt("mode",round.mode);b.putInt("batch",round.batch);b.putInt("index",round.index);b.putInt("independent",round.independent);b.putBoolean("helped",round.helped);b.putBoolean("solved",round.solved);b.putBoolean("finished",round.finished);out.putBundle("round",b);}
     }
     private void readRound(Bundle b){if(b==null)return;PracticeRound r=new PracticeRound();r.id=b.getString("id","");r.child=b.getString("child","");r.level=b.getInt("level");r.mode=b.getInt("mode");r.batch=b.getInt("batch");r.index=b.getInt("index");r.independent=b.getInt("independent");r.helped=b.getBoolean("helped");r.solved=b.getBoolean("solved");r.finished=b.getBoolean("finished");if(r.valid())round=r;}
@@ -427,6 +511,41 @@ public class KataBloomActivity extends AppCompatActivity {
         private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);private final int[] counts;private final String[] labels;
         WeekView(Context context,int[] counts,String[] labels){super(context);this.counts=counts.clone();this.labels=labels.clone();}
         @Override protected void onDraw(Canvas canvas){super.onDraw(canvas);float density=getResources().getDisplayMetrics().density,base=getHeight()-28*density,available=Math.max(1,base-28*density),slot=getWidth()/7f;int max=1;for(int count:counts)max=Math.max(max,count);paint.setTextAlign(Paint.Align.CENTER);paint.setTypeface(Typeface.create("sans-serif",Typeface.NORMAL));for(int i=0;i<7;i++){float x=slot*(i+.5f),height=available*counts[i]/max;paint.setColor(i==6?PURPLE:0xffb89ce8);if(counts[i]>0)canvas.drawRoundRect(x-slot*.2f,base-height,x+slot*.2f,base,8*density,8*density,paint);else{paint.setColor(0xffd9cdf1);canvas.drawCircle(x,base-2*density,3*density,paint);}paint.setColor(INK);paint.setTextSize(13*getResources().getDisplayMetrics().scaledDensity);canvas.drawText(String.valueOf(counts[i]),x,base-height-9*density,paint);paint.setColor(MUTED);paint.setTextSize(11*getResources().getDisplayMetrics().scaledDensity);canvas.drawText(labels[i],x,getHeight()-7*density,paint);}}
+    }
+    /** Bloomi, KataBloom's own mascot: a lavender seed with a sprout. Cheering pose raises arms and opens the smile. */
+    private static final class MascotView extends View {
+        private final Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);private final Path path=new Path();private final boolean cheer;
+        MascotView(Context context,boolean cheer){super(context);this.cheer=cheer;}
+        @Override protected void onDraw(Canvas c){super.onDraw(c);float s=Math.min(getWidth(),getHeight()),ox=(getWidth()-s)/2f,oy=(getHeight()-s)/2f;c.save();c.translate(ox,oy);
+            p.setStyle(Paint.Style.FILL);p.setColor(0x22000000);c.drawOval(s*.24f,s*.88f,s*.76f,s*.97f,p);
+            p.setStyle(Paint.Style.STROKE);p.setStrokeCap(Paint.Cap.ROUND);p.setStrokeWidth(s*.05f);p.setColor(0xff8a63d2);
+            if(cheer){c.drawLine(s*.24f,s*.58f,s*.1f,s*.36f,p);c.drawLine(s*.76f,s*.58f,s*.9f,s*.36f,p);}else{c.drawLine(s*.22f,s*.66f,s*.12f,s*.76f,p);c.drawLine(s*.78f,s*.66f,s*.88f,s*.76f,p);}
+            p.setColor(0xff5a9e6a);p.setStrokeWidth(s*.035f);c.drawLine(s*.5f,s*.27f,s*.5f,s*.14f,p);p.setStyle(Paint.Style.FILL);p.setColor(0xff8fd18a);
+            path.reset();path.moveTo(s*.5f,s*.18f);path.quadTo(s*.32f,s*.2f,s*.3f,s*.06f);path.quadTo(s*.46f,s*.04f,s*.5f,s*.18f);path.close();c.drawPath(path,p);
+            path.reset();path.moveTo(s*.5f,s*.15f);path.quadTo(s*.56f,s*.01f,s*.72f,s*.04f);path.quadTo(s*.7f,s*.18f,s*.5f,s*.15f);path.close();c.drawPath(path,p);
+            p.setShader(new LinearGradient(0,s*.24f,0,s*.9f,0xffc4a8f4,0xff8c62d8,Shader.TileMode.CLAMP));c.drawOval(s*.18f,s*.24f,s*.82f,s*.92f,p);p.setShader(null);
+            p.setColor(0x55ffffff);c.drawOval(s*.32f,s*.6f,s*.68f,s*.88f,p);p.setColor(0x66ffffff);c.drawOval(s*.27f,s*.31f,s*.4f,s*.42f,p);
+            p.setColor(Color.WHITE);c.drawOval(s*.32f,s*.44f,s*.46f,s*.6f,p);c.drawOval(s*.54f,s*.44f,s*.68f,s*.6f,p);
+            p.setColor(0xff2b2140);c.drawCircle(s*.4f,s*.53f,s*.045f,p);c.drawCircle(s*.6f,s*.53f,s*.045f,p);p.setColor(Color.WHITE);c.drawCircle(s*.415f,s*.51f,s*.015f,p);c.drawCircle(s*.615f,s*.51f,s*.015f,p);
+            p.setColor(0x88ff9fc4);c.drawOval(s*.25f,s*.6f,s*.34f,s*.66f,p);c.drawOval(s*.66f,s*.6f,s*.75f,s*.66f,p);
+            if(cheer){p.setColor(0xff6b2f4f);path.reset();path.moveTo(s*.42f,s*.65f);path.quadTo(s*.5f,s*.79f,s*.58f,s*.65f);path.close();c.drawPath(path,p);}
+            else{p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(s*.025f);p.setColor(0xff2b2140);c.drawArc(s*.43f,s*.6f,s*.57f,s*.7f,20,140,false,p);p.setStyle(Paint.Style.FILL);}
+            c.restore();}
+    }
+    /** Completion celebration: cheering Bloomi with falling confetti. Follows the system animation scale. */
+    private static final class CelebrationView extends View {
+        private final Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);private final MascotView mascot;private final float[][] bits=new float[48][5];private float progress=1f;private android.animation.ValueAnimator animator;
+        private static final int[] COLORS={0xff7b4fc9,0xffffc94d,0xffff8fb8,0xff7fcf87,0xff7fb8ff,0xffb594f0};
+        CelebrationView(Context context){super(context);mascot=new MascotView(context,true);Random r=new Random(7);for(float[] b:bits){b[0]=r.nextFloat();b[1]=-.2f-r.nextFloat()*.6f;b[2]=.7f+r.nextFloat()*.8f;b[3]=r.nextInt(COLORS.length);b[4]=r.nextFloat()*360;}}
+        @Override protected void onAttachedToWindow(){super.onAttachedToWindow();animator=android.animation.ValueAnimator.ofFloat(0f,1f);animator.setDuration(2600);animator.addUpdateListener(a->{progress=(float)a.getAnimatedValue();invalidate();});progress=0f;animator.start();}
+        @Override protected void onDetachedFromWindow(){if(animator!=null)animator.cancel();super.onDetachedFromWindow();}
+        @Override protected void onSizeChanged(int w,int h,int ow,int oh){super.onSizeChanged(w,h,ow,oh);mascot.layout(0,0,h,h);}
+        @Override protected void onDraw(Canvas c){super.onDraw(c);float w=getWidth(),h=getHeight();
+            p.setShader(new LinearGradient(0,0,0,h,0xfff3ecfd,0xffe7dcf9,Shader.TileMode.CLAMP));c.drawRoundRect(0,0,w,h,h*.16f,h*.16f,p);p.setShader(null);
+            p.setColor(0xffffe3a3);c.drawCircle(w*.5f,h*.55f,h*.42f,p);p.setColor(0xfffff1cf);c.drawCircle(w*.5f,h*.55f,h*.32f,p);
+            c.save();c.translate((w-h)/2f,0);mascot.draw(c);c.restore();
+            if(progress<1f)for(float[] b:bits){float y=(b[1]+progress*b[2]*1.4f)*h;if(y<-10||y>h)continue;float x=b[0]*w+(float)Math.sin(progress*8+b[4])*h*.04f;p.setColor(COLORS[(int)b[3]]);c.save();c.rotate(b[4]+progress*540,x,y);c.drawRoundRect(x-h*.025f,y-h*.012f,x+h*.025f,y+h*.012f,3,3,p);c.restore();}
+        }
     }
     /** KataBloom mark: open book with a sprout on a purple rounded square. Drawn in code so it scales crisply. */
     private static final class LogoView extends View {

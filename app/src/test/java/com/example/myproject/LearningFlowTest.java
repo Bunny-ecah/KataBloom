@@ -6,14 +6,24 @@ import static org.junit.Assert.*;
 import java.util.*;
 
 public class LearningFlowTest {
-    @Test public void everyBundledWordHasCorrectSyllablesAndUniqueLetterChoices(){
+    @Test public void everyBundledWordHasCorrectSyllablesAndUniqueChoices(){
         Set<String> words=new HashSet<>();
-        for(int level=0;level<3;level++)for(int batch=0;batch<2;batch++)for(int index=0;index<5;index++){
-            LessonBank.Word w=LessonBank.word(level,batch,index);assertTrue(words.add(w.text));assertEquals(w.text,String.join("",w.parts()));
+        for(int level=0;level<LessonBank.LEVELS;level++)for(int batch=0;batch<4;batch++)for(int index=0;index<5;index++){
+            LessonBank.Word w=LessonBank.word(level,batch,index);assertTrue(w.text,words.add(w.text));assertEquals(w.text,String.join("",w.parts()));assertEquals(level,w.level);
+            assertTrue(w.theme>=0&&w.theme<LessonBank.THEMES);assertFalse(w.picture.isEmpty());
             List<String> choices=LessonBank.initials(w,index);assertEquals(3,new HashSet<>(choices).size());assertTrue(choices.contains(w.text.substring(0,1)));
             List<String> tiles=LessonBank.tiles(w,index);List<String> expected=new ArrayList<>(Arrays.asList(w.parts()));Collections.sort(tiles);Collections.sort(expected);assertEquals(expected,tiles);
+            List<String> pictures=LessonBank.pictureChoices(w,index+batch);assertEquals(3,new HashSet<>(pictures).size());assertTrue(pictures.contains(w.text));
+            int gap=LessonBank.gap(w,index+batch);assertTrue(gap>=1&&gap<w.text.length());String masked=LessonBank.masked(w,gap);assertEquals(w.text.length(),masked.length());assertEquals('_',masked.charAt(gap));
+            List<String> letters=LessonBank.gapChoices(w,gap,index+batch);assertEquals(3,new HashSet<>(letters).size());assertTrue(letters.contains(w.text.substring(gap,gap+1)));
         }
-        assertEquals(30,words.size());
+        assertEquals(120,words.size());assertEquals(120,LessonBank.all().size());
+        // Saved results from earlier versions keep the same first round of words.
+        assertEquals("api",LessonBank.word(0,0,0).text);assertEquals("ular",LessonBank.word(0,0,4).text);assertEquals("buku",LessonBank.word(1,0,0).text);assertEquals("kelapa",LessonBank.word(2,0,0).text);
+    }
+    @Test public void answerBasedModesAreScored(){
+        assertFalse(LessonBank.scored(LessonBank.LISTEN));assertTrue(LessonBank.scored(LessonBank.INITIAL));assertTrue(LessonBank.scored(LessonBank.BUILD));assertFalse(LessonBank.scored(LessonBank.SPEAK));assertTrue(LessonBank.scored(LessonBank.PICTURE));assertTrue(LessonBank.scored(LessonBank.MISSING));
+        PracticeRound r=new PracticeRound();r.child="c";r.level=5;r.mode=5;assertTrue(r.valid());r.level=6;assertFalse(r.valid());r.level=0;r.mode=6;assertFalse(r.valid());
     }
     @Test public void onlySolvedQuestionsAdvanceAndEachIsScoredOnce(){
         PracticeRound r=new PracticeRound();r.child="child";assertTrue(r.valid());assertFalse(r.next());

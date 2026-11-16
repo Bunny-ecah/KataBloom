@@ -42,13 +42,32 @@ public final class LearnerStore {
         JSONObject c=child(round.child);if(c==null||c.optString("lastRound").equals(round.id))return false;
         for(int i=0;i<records().length();i++)if(records().optJSONObject(i).optString("id").equals(round.id))return false;
         put(c,"stars",c.optInt("stars")+5);put(c,"rounds",c.optInt("rounds")+1);put(c,"lastRound",round.id);
-        if(round.mode==1||round.mode==2){put(c,"independent",c.optInt("independent")+round.independent);put(c,"questions",c.optInt("questions")+5);}
+        if(LessonBank.scored(round.mode)){put(c,"independent",c.optInt("independent")+round.independent);put(c,"questions",c.optInt("questions")+5);}
         long now=System.currentTimeMillis();String today=ProgressStats.date(now);
         JSONArray dates=c.optJSONArray("dates");if(dates==null)dates=new JSONArray();boolean found=false;for(int i=0;i<dates.length();i++)if(today.equals(dates.optString(i)))found=true;if(!found)dates.put(today);put(c,"dates",dates);
+        JSONArray explored=c.optJSONArray("explored");if(explored==null)explored=new JSONArray();Set<String> seen=strings(explored);for(int i=0;i<LessonBank.ROUND_SIZE;i++){String word=LessonBank.word(round.level,round.batch,i).text;if(seen.add(word))explored.put(word);}put(c,"explored",explored);
         JSONObject r=new JSONObject();put(r,"id",round.id);put(r,"child",round.child);put(r,"level",round.level);put(r,"mode",round.mode);put(r,"independent",round.independent);put(r,"date",today);put(r,"time",now);records().put(r);
         if(records().length()>500){JSONArray recent=new JSONArray();for(int i=records().length()-500;i<records().length();i++)recent.put(records().optJSONObject(i));put(state,"records",recent);}
         save();return true;
     }
+    private static Set<String> strings(JSONArray values){Set<String> result=new LinkedHashSet<>();if(values!=null)for(int i=0;i<values.length();i++)result.add(values.optString(i));return result;}
+    /** Words seen in a completed round (practised, not proof of mastery). */
+    public Set<String> explored(JSONObject child){return child==null?Collections.emptySet():strings(child.optJSONArray("explored"));}
+    /** Words a parent or learner marked as learned in the word library. */
+    public Set<String> learned(JSONObject child){return child==null?Collections.emptySet():strings(child.optJSONArray("learned"));}
+    public void setLearned(String id,String word,boolean value){
+        JSONObject c=child(id);if(c==null||LessonBank.find(word)==null)return;
+        Set<String> words=learned(c);if(value)words.add(word);else words.remove(word);put(c,"learned",new JSONArray(words));save();
+    }
+    public static final String[] STICKERS={"🦋","🌻","🐢","🌈","🍓","🐝","🌙","⭐","🐠","🍄","🐞","🌵","🎈","🐧","🍉","🚀","🌸","🐼","🍩","🦊","🐳","🎨","🪁","🏆"};
+    /** One sticker unlocks for each completed round, in a fixed order. */
+    public static int stickers(JSONObject child){return child==null?0:Math.min(STICKERS.length,Math.max(0,child.optInt("rounds")));}
+    /** Badge goals: rounds 1/3/10/25, explored words 30/120, 7 practice days, 100 stars. Earned badges are never taken away. */
+    public boolean[] badges(JSONObject child){
+        int rounds=child==null?0:child.optInt("rounds"),words=explored(child).size(),days=child==null?0:dates(child).size(),stars=child==null?0:child.optInt("stars");
+        return new boolean[]{rounds>=1,rounds>=3,rounds>=10,rounds>=25,words>=30,words>=LessonBank.LEVELS*LessonBank.PER_LEVEL,days>=7,stars>=100};
+    }
+    public int badgeCount(JSONObject child){int n=0;for(boolean b:badges(child))if(b)n++;return n;}
     public Set<String> dates(JSONObject child){Set<String> result=new HashSet<>();JSONArray dates=child.optJSONArray("dates");if(dates!=null)for(int i=0;i<dates.length();i++)result.add(dates.optString(i));return result;}
     public String snapshot(){return state.toString();}
     public void restore(String json) throws JSONException {JSONObject replacement=validate(new JSONObject(json));state=replacement;save();}
@@ -56,8 +75,8 @@ public final class LearnerStore {
         if(o.optInt("version")!=2||!(o.opt("children") instanceof JSONArray)||!(o.opt("records") instanceof JSONArray))throw new JSONException("Unsupported data format");
         JSONArray children=o.getJSONArray("children"),records=o.getJSONArray("records");if(children.length()>20||records.length()>500)throw new JSONException("Data limit exceeded");
         Set<String> ids=new HashSet<>();
-        for(int i=0;i<children.length();i++){JSONObject c=children.getJSONObject(i);String id=c.getString("id");if(id.isEmpty()||!ids.add(id)||c.optInt("rounds")<0||c.optInt("stars")<0)throw new JSONException("Invalid learner");update(c,c.getString("name"),c.getInt("age"));}
-        for(int i=0;i<records.length();i++){JSONObject r=records.getJSONObject(i);if(!ids.contains(r.getString("child"))||r.getInt("mode")<0||r.getInt("mode")>3||r.getInt("level")<0||r.getInt("level")>2)throw new JSONException("Invalid result");}
+        for(int i=0;i<children.length();i++){JSONObject c=children.getJSONObject(i);String id=c.getString("id");if(id.isEmpty()||!ids.add(id)||c.optInt("rounds")<0||c.optInt("stars")<0)throw new JSONException("Invalid learner");update(c,c.getString("name"),c.getInt("age"));for(String key:new String[]{"explored","learned"}){Object list=c.opt(key);if(list!=null&&(!(list instanceof JSONArray)||((JSONArray)list).length()>500))throw new JSONException("Invalid word list");}}
+        for(int i=0;i<records.length();i++){JSONObject r=records.getJSONObject(i);if(!ids.contains(r.getString("child"))||r.getInt("mode")<0||r.getInt("mode")>=LessonBank.MODES||r.getInt("level")<0||r.getInt("level")>=LessonBank.LEVELS)throw new JSONException("Invalid result");}
         return o;
     }
     public void importChild(String id,String name,int age){if(child(id)!=null)return;if(children().length()>=20)return;JSONObject c=new JSONObject();put(c,"id",id);update(c,name,age);children().put(c);save();}
