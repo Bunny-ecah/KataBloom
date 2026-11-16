@@ -37,7 +37,7 @@ public class MobileFlowTest {
             for(int i=0;i<5;i++){onView(withText(answers[i])).perform(scrollTo(),click());if(i==0)scenario.recreate();onView(withText(i==4?"Selesaikan pengembaraan":"Perkataan seterusnya")).perform(scrollTo(),click());}
             onView(withText("+5 bintang usaha")).check(matches(isDisplayed()));scenario.recreate();onView(withText("+5 bintang usaha")).check(matches(isDisplayed()));screenshot("complete-ms");
             Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();com.example.myproject.learning.LearnerStore store=new com.example.myproject.learning.LearnerStore(c,"local");assertEquals(5,store.selected().optInt("stars"));assertEquals(1,store.records().length());
-            onView(withText("Kembali ke taman")).perform(scrollTo(),click());screenshot("home-ms");onView(withText("Kemajuan")).perform(click());onView(withText("Lihat betapa kamu berkembang")).check(matches(isDisplayed()));screenshot("progress-ms");onView(withContentDescription(org.hamcrest.Matchers.startsWith("Aktiviti tujuh hari: "))).perform(scrollTo());screenshot("week-ms");onView(withContentDescription("5 / 5 jawapan tanpa bantuan")).perform(scrollTo()).check(matches(isDisplayed()));screenshot("ring-ms");onView(withText("Tetapan")).perform(click());onView(withContentDescription("Tukar bahasa kepada English")).perform(click());onView(withText("Larger text")).perform(scrollTo(),click());screenshot("settings-en");
+            onView(withText("Kembali ke taman")).perform(scrollTo(),click());screenshot("home-ms");onView(withText("Taman")).perform(click());onView(withText("Lihat betapa kamu berkembang")).check(matches(isDisplayed()));screenshot("progress-ms");onView(withContentDescription(org.hamcrest.Matchers.startsWith("Aktiviti tujuh hari: "))).perform(scrollTo());screenshot("week-ms");onView(withContentDescription("5 / 5 jawapan tanpa bantuan")).perform(scrollTo()).check(matches(isDisplayed()));screenshot("ring-ms");onView(withText("Profil")).perform(click());onView(withContentDescription("Tukar bahasa kepada English")).perform(click());onView(withText("Larger text")).perform(scrollTo(),click());screenshot("settings-en");
         }
     }
     @Test public void syllableRetryAndHintSurviveRotation(){
@@ -64,7 +64,7 @@ public class MobileFlowTest {
         try(ActivityScenario<KataBloomActivity> scenario=ActivityScenario.launch(KataBloomActivity.class)){
             onView(withText("Log masuk")).perform(scrollTo(),click());onView(withText("E-mel ibu bapa")).check(matches(isDisplayed()));screenshot("signin-ms");onView(withText("Kembali ke halaman mula")).perform(scrollTo(),click());
             onView(withText("Daftar akaun")).perform(scrollTo(),click());onView(withText("Sahkan kata laluan")).perform(scrollTo()).check(matches(isDisplayed()));screenshot("signup-ms");onView(withText("Kembali ke halaman mula")).perform(scrollTo(),click());
-            onView(withText("Teruskan tanpa akaun")).perform(scrollTo(),click());onView(withText("Tetapan")).perform(click());onView(withText("Keluar ke halaman mula")).perform(scrollTo(),click());onView(withText("Teruskan")).perform(click());onView(withText("Belajar dengan yakin.")).check(matches(isDisplayed()));
+            onView(withText("Teruskan tanpa akaun")).perform(scrollTo(),click());onView(withText("Profil")).perform(click());onView(withText("Keluar ke halaman mula")).perform(scrollTo(),click());onView(withText("Teruskan")).perform(click());onView(withText("Belajar dengan yakin.")).check(matches(isDisplayed()));
         }
     }
 }
