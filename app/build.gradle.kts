@@ -19,7 +19,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.bunnyecah.katabloom"
+        applicationId = "com.example.myproject"
         minSdk = 23
         targetSdk = 36
         versionCode = 6
