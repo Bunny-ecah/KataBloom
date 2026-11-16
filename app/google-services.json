@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:778478427814:android:b4a44395034416b7e6de67",
+        "android_client_info": {
+          "package_name": "com.bunnyecah.katabloom"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtJozUaqXnRudxRzWJLDUVQq0uOCV-pTc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:778478427814:android:4d9fac68cdc91da4e6de67",
         "android_client_info": {
           "package_name": "com.example.myproject"
