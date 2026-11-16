@@ -10,6 +10,6 @@
 
 The new version replaces the former mix of screens. Original source/resources are preserved in legacy-source for reference. Guest garden totals migrate once; importing original Firebase child profiles is an explicit parent action. Existing cloud records remain unchanged.
 
-Use the local Android Studio build on your tablet for updates. It uses your local debug signing key. The GitHub build is an additional downloadable test artifact, not an automatic tablet installation.
+To share the app with other people, publish a signed release (see README > Publishing a release); they install it from the Releases page. Android Studio Run builds use your debug key and cannot update a Releases install, so test them on a separate device or uninstall first.
 
 Read README.md for Firebase setup, migration, audio requirements and the scope of the FYP prototype. See VALIDATION.md for test results.

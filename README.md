@@ -1,10 +1,28 @@
-# KataBloom 2.2.1
+# KataBloom 2.3.0
 
 A native Android word garden for primary learners, with a Bahasa Melayu / English interface switch. Learning words and speech practice stay in Bahasa Melayu.
 
+## Install KataBloom (parents and teachers)
+
+1. On an Android 6.0+ phone or tablet, open **[the latest release](https://github.com/Bunny-ecah/KataBloom/releases/latest)**.
+2. Under **Assets**, tap **KataBloom-v….apk** to download it.
+3. Open the downloaded file. If Android asks, allow your browser or Files app to **install unknown apps**, then tap **Install**.
+4. Open KataBloom and choose **Continue without an account** to start straight away, or **Sign up** to create a parent account with optional cloud backup.
+5. For read-aloud, install a Malay text-to-speech voice: Settings > Accessibility > Text-to-speech > install voice data > Bahasa Melayu.
+
+Updates: download the newer APK from the same page and install it over the old one. Your learners and progress are kept.
+
+> Google Play Protect may warn that the app is from an unknown developer, because it is not distributed through Google Play. Only download KataBloom from this repository's Releases page.
+
+KataBloom is a learning prototype, not a dyslexia diagnosis or treatment tool. See *Audio and teaching scope* below.
+
+---
+
+## For developers
+
 ## Open the correct project
 
-Open this folder in Android Studio, let Gradle sync, select your phone/tablet, then press Run. The app opens to a bilingual welcome page with Sign in, Sign up and Continue without an account. Signed-in parents return to the dashboard. The app name is KataBloom and the version is 2.2.1.
+Open this folder in Android Studio, let Gradle sync, select your phone/tablet, then press Run. The app opens to a bilingual welcome page with Sign in, Sign up and Continue without an account. Signed-in parents return to the dashboard. The app name is KataBloom and the version is 2.3.0. The application ID is `com.bunnyecah.katabloom` (the Java namespace remains `com.example.myproject`).
 
 - Android 6.0+ (API 23), compile/target SDK 36.
 - Use Android Studio's bundled JDK (17+, tested with 21).
@@ -17,10 +35,12 @@ Open this folder in Android Studio, let Gradle sync, select your phone/tablet, t
 - A dashboard with daily mission, effort-star and streak tiles, and a badge trail.
 - A seven-day activity chart and independent-answer ring based on real saved results; empty results display a dash.
 
-- 30 bundled Malay words across three levels, with alternating sets of five words.
-- Listen and look, identify initial letters, order syllable tiles, and try speaking.
+- 120 bundled Malay words across six levels (vowel words, open syllables, closed syllables, ng/ny sounds, three-syllable and long words) and six themes (animals, food, home & school, body & clothes, nature, travel & places). Each round uses five words; four rotating sets cover every word in a level.
+- Six activities: Listen & look, Find the first letter, Build a word (syllable tiles), Picture match, Missing letter and Try speaking. Picture match and Missing letter use a select-then-Semak (Check) flow.
+- Kamus Kata word library: browse by theme, hear each word, see syllables, and mark words as learned. Words practised in completed rounds are shown as explored (practice, not mastery).
+- Bloomi, KataBloom's own mascot, a confetti celebration after each round, a 24-sticker album and eight permanent badges.
 - Gentle hints/retries, no timer or lost lives, and five effort stars per completed round.
-- A garden illustration that grows with practice and badges at 1, 3 and 10 rounds.
+- A garden illustration that grows with practice.
 - Multiple local learner profiles, ages 7-11, with separate results and a saved active learner.
 - Honest progress: actual completed rounds, consecutive practice days and independent letter/building answers. Listening completion and speech-service matches are not labelled as reading mastery.
 - Adjustable text size, spacing, background, audio speed and saved BM/English choice.
@@ -59,9 +79,22 @@ Debug APK: `app/build/outputs/apk/debug/app-debug.apk`.
 .\gradlew.bat assembleQa assembleQaAndroidTest
 ```
 
-QA uses the separate package `com.example.myproject.qa`, with no live Firebase account. Install the QA app and QA test APK on an emulator and run `com.example.myproject.qa.test/androidx.test.runner.AndroidJUnitRunner`. The tests refuse to clear preferences outside the QA package. They cover profile isolation, deletion, persistence, safe restore, language persistence, completing a round, rotation, retry/hint state and syllable selection. Use an emulator for these tests, not your real learner installation.
+QA uses the separate package `com.bunnyecah.katabloom.qa`, with no live Firebase account. Install the QA app and QA test APK on an emulator and run `com.bunnyecah.katabloom.qa.test/androidx.test.runner.AndroidJUnitRunner`. The tests refuse to clear preferences outside the QA package. They cover profile isolation, deletion, persistence, safe restore, language persistence, completing a round, rotation, retry/hint state and syllable selection. Use an emulator for these tests, not your real learner installation.
 
-GitHub Actions builds/tests/lints each push to main and supplies a downloadable debug APK. It does not install on your device. Press Run in Android Studio for the fastest local update. GitHub-hosted debug builds use a different signing key from local builds unless you configure a persistent signing key; use your local build consistently on the tablet to preserve upgrade compatibility.
+GitHub Actions builds/tests/lints each push to main and supplies a downloadable debug APK for testing. Press Run in Android Studio for the fastest local update.
+
+## Publishing a release
+
+Releases are signed with the KataBloom release key so every version installs over the previous one.
+
+1. One-time: add the repository secrets `KATABLOOM_KEYSTORE_BASE64`, `KATABLOOM_KEYSTORE_PASSWORD`, `KATABLOOM_KEY_ALIAS` and `KATABLOOM_KEY_PASSWORD` (Settings > Secrets and variables > Actions).
+2. Raise `versionCode` (always +1) and `versionName` in `app/build.gradle.kts`, and commit to main.
+3. Create a tag such as `v2.3.1` (GitHub > Releases > Draft a new release > choose a new tag), or run `git tag v2.3.1 && git push origin v2.3.1`.
+4. The *Publish release APK* workflow tests, signs and attaches `KataBloom-v2.3.1.apk` to that release.
+
+To build a signed release locally, place `katabloom-release.jks` and `keystore.properties` in the project root (both are git-ignored) and run `.\gradlew.bat assembleRelease`. Never commit or share the key; back it up privately. If it is lost, existing installs cannot be updated.
+
+Version 2.3.0 changed the application ID from `com.example.myproject`, so it installs as a new app beside older test builds. Export learner reports from the old build before uninstalling it. The Firebase project must contain an Android app registered for `com.bunnyecah.katabloom`, with its `google-services.json` in `app/`.
 
 See VALIDATION.md for checks actually performed and remaining limitations.
 

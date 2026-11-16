@@ -1,11 +1,21 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- KataBloom keeps its lavender design in light and dark system modes. -->
     <style name="Base.Theme.MyProject" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="colorPrimary">#176B60</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimary">@color/katabloom_purple</item>
+        <item name="colorPrimaryVariant">@color/katabloom_purple_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/katabloom_purple</item>
+        <item name="colorAccent">@color/katabloom_purple</item>
+        <item name="colorControlActivated">@color/katabloom_purple</item>
+        <item name="android:colorAccent">@color/katabloom_purple</item>
         <item name="android:fontFamily">sans</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:statusBarColor">#FFFAEF</item>
-        <item name="android:navigationBarColor">#FFFAEF</item>
+        <item name="android:windowBackground">@color/katabloom_lavender</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:statusBarColor">@color/katabloom_purple</item>
+        <item name="android:navigationBarColor">@color/white</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
     </style>
+
+    <style name="Theme.MyProject" parent="Base.Theme.MyProject" />
 </resources>

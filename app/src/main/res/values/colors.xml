@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="white">#FFFFFF</color>
-
+    <color name="katabloom_purple">#7B4FC9</color>
+    <color name="katabloom_purple_dark">#5E37AD</color>
+    <color name="katabloom_lavender">#F6F1FD</color>
 </resources>

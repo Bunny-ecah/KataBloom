@@ -14,5 +14,5 @@ public final class PracticeRound {
         if(index==4){finished=true;return true;}
         index++;solved=false;helped=false;return true;
     }
-    public boolean valid(){return !id.isEmpty()&&!child.isEmpty()&&level>=0&&level<3&&mode>=0&&mode<4&&batch>=0&&index>=0&&index<5&&independent>=0&&independent<=index+(solved?1:0)&&(!finished||(index==4&&solved));}
+    public boolean valid(){return !id.isEmpty()&&!child.isEmpty()&&level>=0&&level<LessonBank.LEVELS&&mode>=0&&mode<LessonBank.MODES&&batch>=0&&index>=0&&index<5&&independent>=0&&independent<=index+(solved?1:0)&&(!finished||(index==4&&solved));}
 }
